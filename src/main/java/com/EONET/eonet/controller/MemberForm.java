@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotEmpty;
 
 @Getter @Setter
 public class MemberForm {
-    private Long id;
 
     private String userName;
     @NotEmpty(message = "비밀번호는 필수 입니다")

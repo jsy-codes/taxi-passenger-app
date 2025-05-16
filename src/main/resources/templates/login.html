@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>로그인</title>
     <!-- Bootstrap CSS CDN -->
@@ -27,7 +28,7 @@
 <body>
 <div class="login-container">
     <h3 class="text-center mb-4">로그인</h3>
-    <form>
+    <form action="/login" method="post">
         <div class="mb-3">
             <label for="email" class="form-label">이메일</label>
             <input type="email" class="form-control" id="email" placeholder="studentId@donga.ac.kr" required>
@@ -40,7 +41,7 @@
             <button type="submit" class="btn btn-primary">로그인</button>
         </div>
         <div class="text-center">
-            <small class="text-muted">계정이 없으신가요? <a href="#">회원가입</a></small>
+            <small class="text-muted">계정이 없으신가요? <a href="/members/new">회원가입</a></small>
         </div>
     </form>
 </div>

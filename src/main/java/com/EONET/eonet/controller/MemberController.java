@@ -47,7 +47,6 @@ public class MemberController {
         }
 
         Member member = new Member();
-        member.setId(form.getId());
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(form.getPassword());
         member.setPassword(encodedPassword);
