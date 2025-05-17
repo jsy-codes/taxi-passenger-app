@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -34,4 +36,14 @@ public class TaxiPost {
     public enum Status {
         모집중, 마감
     }
+
+    @ManyToMany
+    @JoinTable(
+            name = "taxi_post_participants",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "member_id")
+    )
+    private List<Member> participants = new ArrayList<>();
+
+    private int currentPeople = 1;
 }

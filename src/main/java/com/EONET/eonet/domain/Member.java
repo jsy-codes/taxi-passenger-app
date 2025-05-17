@@ -3,7 +3,11 @@ package com.EONET.eonet.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Getter @Setter
@@ -20,6 +24,22 @@ public class Member implements UserDetails {
     private String studentId;
     @Column(nullable = false, unique = true)
     private String email; // 동아대 이메일
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList(); // 현재 권한 없음
+    }
+
+    @Override
+    public String getUsername() {
+        return this.userName;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
