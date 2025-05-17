@@ -1,93 +1,67 @@
 package com.EONET.eonet.controller;
 
-import com.EONET.eonet.domain.Member;
-import com.EONET.eonet.service.MemberService;
-import com.EONET.eonet.domain.TaxiPost;
-import com.EONET.eonet.service.TaxiPostService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+//
+//import com.example.project.domain.Member;
+//import com.example.project.domain.TaxiPost;
+//import com.example.project.dto.TaxiPostDto;
+//import com.example.project.repository.TaxiPostRepository;
+//import com.example.project.repository.MemberRepository;
+import com.EONET.eonet.dto.TaxiPostDto;
+import com.EONET.eonet.repository.MemberRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
-
+import java.net.URI;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/posts")
-@RequiredArgsConstructor
+@RequestMapping("/api/taxi-posts")
 public class TaxiPostController {
 
-    private final TaxiPostService taxiPostService;
-    private final MemberService memberService;
+    private final TaxiPostRepository taxiPostRepository;
+    private final MemberRepository memberRepository;
 
+    public TaxiPostController(TaxiPostRepository taxiPostRepository, MemberRepository memberRepository) {
+        this.taxiPostRepository = taxiPostRepository;
+        this.memberRepository = memberRepository;
+    }
+
+    // Create a new post
     @PostMapping
-    public TaxiPost createPost(@RequestBody TaxiPost post) {
-        return taxiPostService.createPost(post);
+    public ResponseEntity<Void> createPost(@RequestBody TaxiPostDto dto) {
+        Member writer = memberRepository.findById(dto.getWriterId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
+        TaxiPost post = new TaxiPost(
+                writer,
+                dto.getDeparture(),
+                dto.getDestination(),
+                dto.getDepartureTime(),
+                dto.getExpectedFare(),
+                dto.getExpectedTime()
+        );
+        TaxiPost saved = taxiPostRepository.save(post);
+        return ResponseEntity.created(URI.create("/api/taxi-posts/" + saved.getId())).build();
     }
 
+    // List all posts
     @GetMapping
-    public List<TaxiPost> getAllPosts() {
-        return taxiPostService.getAllPosts();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getPostById(@PathVariable Long id) {
-        try {
-            TaxiPost post = taxiPostService.getPostById(id);
-            return ResponseEntity.ok(post);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updatePost(@PathVariable Long id, @RequestBody TaxiPost updatedPost) {
-        try {
-            TaxiPost updated = taxiPostService.updatePost(id, updatedPost);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/{id}/join")
-    public ResponseEntity<?> joinTaxiPost(@PathVariable Long id,
-                                          @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            Member member = memberService.findByUsername(userDetails.getUsername());
-            String result = taxiPostService.joinPost(id, member);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/{id}/close")
-    public ResponseEntity<?> closePost(@PathVariable Long id) {
-        try {
-            TaxiPost closed = taxiPostService.closePost(id);
-            return ResponseEntity.ok(closed);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/{id}/participants/count")
-    public ResponseEntity<?> getParticipantCount(@PathVariable Long id) {
-        try {
-            int count = taxiPostService.getParticipantCount(id);
-            return ResponseEntity.ok(Map.of("count", count));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/test")
-    public String test() {
-        return "TaxiPostController is alive!";
+    public ResponseEntity<List<TaxiPostDto>> getAllPosts() {
+        List<TaxiPostDto> list = taxiPostRepository.findAll().stream()
+                .map(post -> {
+                    TaxiPostDto dto = new TaxiPostDto();
+                    dto.setId(post.getId());
+                    dto.setWriterId(post.getWriter().getId());
+                    dto.setDeparture(post.getDeparture());
+                    dto.setDestination(post.getDestination());
+                    dto.setDepartureTime(post.getDepartureTime());
+                    dto.setExpectedFare(post.getExpectedFare());
+                    dto.setExpectedTime(post.getExpectedTime());
+                    dto.setMaxPeople(post.getMaxPeople());
+                    dto.setStatus(post.getStatus().name());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(list);
     }
 }

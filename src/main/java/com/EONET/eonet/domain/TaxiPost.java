@@ -1,18 +1,15 @@
 package com.EONET.eonet.domain;
-
+// 1. TaxiPost Entity (src/main/java/com/example/project/domain/TaxiPost.java)
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class TaxiPost {
 
     @Id
@@ -20,30 +17,30 @@ public class TaxiPost {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member writer;
 
-    private String departure;          // 출발지 주소
-    private String destination;        // 목적지
-    private LocalDateTime departureTime; // 출발 시간
-    private Integer expectedFare;      // 예상 금액
-    private String expectedTime;       // 도착 예상 시간
-    private Integer maxPeople = 4;     // 최대 인원 (기본 4)
+    private String departure;
+    private String destination;
+    private LocalDateTime departureTime;
+    private Integer expectedFare;
+    private String expectedTime;
+    private Integer maxPeople = 4;
 
     @Enumerated(EnumType.STRING)
-    private Status status;             // 모집 상태
+    private PostStatus status = PostStatus.RECRUITING;
 
-    public enum Status {
-        모집중, 마감
+    // Constructors
+    public TaxiPost() {}
+
+    public TaxiPost(Member writer, String departure, String destination,
+                    LocalDateTime departureTime, Integer expectedFare,
+                    String expectedTime) {
+        this.writer = writer;
+        this.departure = departure;
+        this.destination = destination;
+        this.departureTime = departureTime;
+        this.expectedFare = expectedFare;
+        this.expectedTime = expectedTime;
     }
 
-    @ManyToMany
-    @JoinTable(
-            name = "taxi_post_participants",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "member_id")
-    )
-    private List<Member> participants = new ArrayList<>();
-
-    private int currentPeople = 1;
-}

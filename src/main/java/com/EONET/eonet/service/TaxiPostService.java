@@ -2,7 +2,6 @@ package com.EONET.eonet.service;
 
 import com.EONET.eonet.domain.Member;
 import com.EONET.eonet.domain.TaxiPost;
-import com.EONET.eonet.repository.TaxiPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

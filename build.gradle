@@ -24,7 +24,10 @@ repositories {
 }
 
 dependencies {
+//	=======
+//<<<<<<< HEAD
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+//>>>>>>> 822611b
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -35,6 +38,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+	implementation 'org.hibernate.validator:hibernate-validator:7.0.5.Final'
 }
 
 tasks.named('test') {
