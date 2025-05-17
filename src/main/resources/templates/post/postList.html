@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>게시글 목록</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+    <h1 class="mb-4">전체 게시글</h1>
+
+    <!-- 글쓰기 버튼 -->
+    <div class="mb-3">
+        <a href="/taxi-posts/new" class="btn btn-primary">글쓰기</a>
+    </div>
+
+    <!-- 게시글 테이블 -->
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>출발지</th>
+            <th>도착지</th>
+            <th>출발 시간</th>
+            <th>요금</th>
+            <th>상태</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="post : ${posts}">
+            <td th:text="${post.id}">1</td>
+            <td th:text="${post.departure}">출발</td>
+            <td th:text="${post.destination}">도착</td>
+            <td th:text="${post.departureTime}">시간</td>
+            <td th:text="${post.expectedFare}">금액</td>
+            <td th:text="${post.status}">상태</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
