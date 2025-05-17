@@ -6,17 +6,20 @@ package com.EONET.eonet.controller;
 //import com.example.project.dto.TaxiPostDto;
 //import com.example.project.repository.TaxiPostRepository;
 //import com.example.project.repository.MemberRepository;
+import com.EONET.eonet.domain.Member;
+import com.EONET.eonet.domain.TaxiPost;
 import com.EONET.eonet.dto.TaxiPostDto;
 import com.EONET.eonet.repository.MemberRepository;
 import com.EONET.eonet.repository.TaxiPostRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestController
+@Controller
 @RequestMapping("/api/taxi-posts")
 public class TaxiPostController {
 
@@ -31,7 +34,7 @@ public class TaxiPostController {
     // Create a new post
     @PostMapping
     public ResponseEntity<Void> createPost(@RequestBody TaxiPostDto dto) {
-        Member writer = memberRepository.findById(dto.getWriterId())
+        Member writer = memberRepository.findOptionalById(dto.getWriterId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
         TaxiPost post = new TaxiPost(
                 writer,

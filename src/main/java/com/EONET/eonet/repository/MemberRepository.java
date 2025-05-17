@@ -5,10 +5,11 @@ import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.EntityManager;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class MemberRepository {
+public class MemberRepository  {
 
     private final EntityManager em;
 
@@ -30,6 +31,11 @@ public class MemberRepository {
                 .setParameter("id", id)
                 .getResultList();
     }
-
+    public Optional<Member> findOptionalById(Long id) {
+        return em.createQuery("select m from Member m where m.id = :id", Member.class)
+                .setParameter("id", id)
+                .getResultStream()
+                .findFirst(); // Optional<Member> 반환
+    }
 
 }
