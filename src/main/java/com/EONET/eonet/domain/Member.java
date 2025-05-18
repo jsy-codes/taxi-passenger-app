@@ -14,10 +14,9 @@ import java.util.Collections;
 public class Member implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "member_id")
+    private String id;
 
-    private String userName;
     @Column(nullable = false)
     private String password; // 추후 암호화 적용
 
@@ -32,7 +31,7 @@ public class Member implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.userName;
+        return this.id;
     }
 
     @Override

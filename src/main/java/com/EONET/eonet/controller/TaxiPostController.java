@@ -11,25 +11,47 @@ import com.EONET.eonet.domain.TaxiPost;
 import com.EONET.eonet.dto.TaxiPostDto;
 import com.EONET.eonet.repository.MemberRepository;
 import com.EONET.eonet.repository.TaxiPostRepository;
+import com.EONET.eonet.service.MemberService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@Slf4j
 @RequestMapping("/api/taxi-posts")
+@RequiredArgsConstructor
 public class TaxiPostController {
 
     private final TaxiPostRepository taxiPostRepository;
     private final MemberRepository memberRepository;
+    private final MemberService memberService;
+    @RequestMapping("/postList")
+    public String postList(Model model) {
+        log.info("post controller");
 
-    public TaxiPostController(TaxiPostRepository taxiPostRepository, MemberRepository memberRepository) {
+        // 현재 로그인한 사용자 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getName() != null) {
+            Member member = memberService.findByUsername(authentication.getName()); // 사용자 정보 조회
+            model.addAttribute("member", member); // 모델에 추가
+        }
+
+        return "post/postList";
+    }
+   /* public TaxiPostController(TaxiPostRepository taxiPostRepository, MemberRepository memberRepository) {
         this.taxiPostRepository = taxiPostRepository;
         this.memberRepository = memberRepository;
-    }
+    }*/
 
     // Create a new post
     @PostMapping
@@ -55,7 +77,8 @@ public class TaxiPostController {
                 .map(post -> {
                     TaxiPostDto dto = new TaxiPostDto();
                     dto.setId(post.getId());
-                    dto.setWriterId(post.getWriter().getId());
+                   // dto.setWriterId(post.getWriter().getId());
+
                     dto.setDeparture(post.getDeparture());
                     dto.setDestination(post.getDestination());
                     dto.setDepartureTime(post.getDepartureTime());
@@ -68,4 +91,6 @@ public class TaxiPostController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
+
+
 }

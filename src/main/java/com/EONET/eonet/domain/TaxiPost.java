@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.persistence.Id;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,7 +30,9 @@ public class TaxiPost {
     private PostStatus status = PostStatus.RECRUITING;
 
     // Constructors
-    public TaxiPost() {}
+
+    public TaxiPost() {
+    }
 
     public TaxiPost(Member writer, String departure, String destination,
                     LocalDateTime departureTime, Integer expectedFare,
@@ -45,3 +46,4 @@ public class TaxiPost {
     }
 
 }
+
