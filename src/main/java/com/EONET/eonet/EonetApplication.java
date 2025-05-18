@@ -9,5 +9,4 @@ public class EonetApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(EonetApplication.class, args);
 	}
-
 }

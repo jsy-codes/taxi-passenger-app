@@ -1,7 +1,11 @@
 package com.EONET.eonet.dto;
 
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.LocalDateTime;
+@Getter
+@Setter
 public class TaxiPostDto {
     private Long id;
     private Long writerId;

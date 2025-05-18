@@ -3,7 +3,7 @@ package com.EONET.eonet.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 import java.time.LocalDateTime;
 
@@ -44,3 +44,4 @@ public class TaxiPost {
         this.expectedTime = expectedTime;
     }
 
+}
