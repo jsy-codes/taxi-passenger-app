@@ -26,7 +26,7 @@ public class MemberRepository  {
                 .getResultList();
     }
 
-    public List<Member> findById(Long id) {
+    public List<Member> findById(String id) {
         return em.createQuery("select m from Member m where m.id = :id", Member.class)
                 .setParameter("id", id)
                 .getResultList();

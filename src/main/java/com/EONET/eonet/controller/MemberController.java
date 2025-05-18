@@ -50,8 +50,7 @@ public class MemberController {
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(form.getPassword());
         member.setPassword(encodedPassword);
-        member.setUserName(form.getUserName());
-        member.setPassword(form.getPassword());
+        member.setId(form.getId());
         member.setStudentId(form.getStudentId());
         member.setEmail(form.getEmail());
         memberService.join(member);

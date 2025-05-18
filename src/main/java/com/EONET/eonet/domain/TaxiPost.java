@@ -3,7 +3,8 @@ package com.EONET.eonet.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
+
 
 import java.time.LocalDateTime;
 
@@ -31,7 +32,8 @@ public class TaxiPost {
     private PostStatus status = PostStatus.RECRUITING;
 
     // Constructors
-    public TaxiPost() {}
+    public TaxiPost() {
+    }
 
     public TaxiPost(Member writer, String departure, String destination,
                     LocalDateTime departureTime, Integer expectedFare,
@@ -43,5 +45,6 @@ public class TaxiPost {
         this.expectedFare = expectedFare;
         this.expectedTime = expectedTime;
     }
+}
 
 

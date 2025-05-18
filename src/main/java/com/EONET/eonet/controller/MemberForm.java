@@ -8,8 +8,8 @@ import jakarta.validation.constraints.NotEmpty;
 
 @Getter @Setter
 public class MemberForm {
-
-    private String userName;
+    @NotEmpty(message = "id은 필수 입니다")
+    private String id;
     @NotEmpty(message = "비밀번호는 필수 입니다")
     private String password;
 

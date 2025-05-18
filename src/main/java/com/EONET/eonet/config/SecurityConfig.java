@@ -35,12 +35,12 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers( "/login","/members/new", "/members", "/home").permitAll()
+                        .requestMatchers( "/login","/members/new","/postList").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/home", true)
+                        .defaultSuccessUrl("/postList", true)
                         .permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll);

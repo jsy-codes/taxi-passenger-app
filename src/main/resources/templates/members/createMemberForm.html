@@ -33,9 +33,10 @@
         </div>
 
         <div class="mb-3">
-            <label for="userName" class="form-label">이름</label>
-            <input type="text" th:field="*{userName}" class="form-control" id="userName" placeholder="이름을 입력하세요" required>
-        </div>
+            <label th:for="id">아이디</label>
+            <input type="text" th:field="*{id}" class="form-control" placeholder="아이디를 입력하세요"
+                   th:classappend="${#fields.hasErrors('id')} ? 'fieldError'">
+            <p th:if="${#fields.hasErrors('id')}" th:errors="*{id}">Incorrect id</p> </div>
         <div class="mb-3">
             <label for="email" class="form-label">이메일</label>
             <div class="input-group">
