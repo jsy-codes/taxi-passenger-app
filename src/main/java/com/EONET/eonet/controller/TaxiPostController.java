@@ -12,6 +12,7 @@ import com.EONET.eonet.dto.TaxiPostDto;
 import com.EONET.eonet.repository.MemberRepository;
 import com.EONET.eonet.repository.TaxiPostRepository;
 import com.EONET.eonet.service.MemberService;
+import com.EONET.eonet.service.TaxiPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,7 @@ public class TaxiPostController {
     private final TaxiPostRepository taxiPostRepository;
     private final MemberRepository memberRepository;
     private final MemberService memberService;
+    private final TaxiPostService taxiPostService;
     @RequestMapping("/postList")
     public String postList(Model model) {
         log.info("post controller");
@@ -46,6 +50,9 @@ public class TaxiPostController {
             model.addAttribute("member", member); // 모델에 추가
         }
 
+        List<TaxiPost> posts = taxiPostRepository.findAll();
+        model.addAttribute("posts", posts);
+
         return "post/postList";
     }
    /* public TaxiPostController(TaxiPostRepository taxiPostRepository, MemberRepository memberRepository) {
@@ -53,26 +60,38 @@ public class TaxiPostController {
         this.memberRepository = memberRepository;
     }*/
 
+    @GetMapping("/api/taxi-posts/{id}")
+    public String getPostDetail(@PathVariable Long id, Model model) {
+        TaxiPost post = taxiPostService.getPostById(id);
+        model.addAttribute("post", post);
+        return "postDetail"; // postDetail.html로 이동
+    }
+
     // Create a new post
     @PostMapping
-    public ResponseEntity<Void> createPost(@RequestBody TaxiPostDto dto) {
+    public String createPost(@ModelAttribute TaxiPostDto dto) {
+
         Member writer = memberRepository.findOptionalById(dto.getWriterId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        LocalDateTime parsedDepartureTime = LocalDateTime.parse(dto.getDepartureTime(), formatter);
+
         TaxiPost post = new TaxiPost(
                 writer,
                 dto.getDeparture(),
                 dto.getDestination(),
-                dto.getDepartureTime(),
+                parsedDepartureTime,
                 dto.getExpectedFare(),
                 dto.getExpectedTime()
         );
-        TaxiPost saved = taxiPostRepository.save(post);
-        return ResponseEntity.created(URI.create("/api/taxi-posts/" + saved.getId())).build();
+        taxiPostRepository.save(post);
+        return "redirect:/api/taxi-posts/postList";
     }
 
     // List all posts
     @GetMapping
     public ResponseEntity<List<TaxiPostDto>> getAllPosts() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
         List<TaxiPostDto> list = taxiPostRepository.findAll().stream()
                 .map(post -> {
                     TaxiPostDto dto = new TaxiPostDto();
@@ -81,7 +100,7 @@ public class TaxiPostController {
 
                     dto.setDeparture(post.getDeparture());
                     dto.setDestination(post.getDestination());
-                    dto.setDepartureTime(post.getDepartureTime());
+                    dto.setDepartureTime(post.getDepartureTime().format(formatter));
                     dto.setExpectedFare(post.getExpectedFare());
                     dto.setExpectedTime(post.getExpectedTime());
                     dto.setMaxPeople(post.getMaxPeople());
@@ -93,4 +112,15 @@ public class TaxiPostController {
     }
 
 
+    @GetMapping("/new")
+    public String showCreateForm(Model model) {
+        // 로그인한 사용자 ID 가져오기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getName() != null) {
+            Member member = memberService.findByUsername(auth.getName());
+            model.addAttribute("memberId", member.getId()); // createPost.html로 넘김
+        }
+
+        return "post/createPost"; // templates/post/createPost.html로 렌더링
+    }
 }

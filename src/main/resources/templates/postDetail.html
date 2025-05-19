@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>게시글 상세 보기</title>
+  <script type="text/javascript"
+          src="//dapi.kakao.com/v2/maps/sdk.js?appkey=5785ff36be13888f3f627611b39b95d7&libraries=services"></script>
+  <style>
+    #map {
+      width: 100%;
+      height: 400px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<h1>게시글 상세</h1>
+
+<div>
+  <p><strong>출발지:</strong> <span th:text="${post.departure}"></span></p>
+  <p><strong>도착지:</strong> <span th:text="${post.destination}"></span></p>
+  <p><strong>출발 시각:</strong> <span th:text="${post.departureTime}"></span></p>
+  <p><strong>예상 요금:</strong> <span th:text="${post.expectedFare}"></span>원</p>
+  <p><strong>예상 소요 시간:</strong> <span th:text="${post.expectedTime}"></span></p>
+</div>
+
+<div id="map"></div>
+
+<script th:inline="javascript">
+  // 서버에서 전달된 출발지, 도착지
+  var departure = /*[[${post.departure}]]*/ '서울역';
+  var destination = /*[[${post.destination}]]*/ '강남역';
+
+  var mapContainer = document.getElementById('map');
+  var map = new kakao.maps.Map(mapContainer, {
+    center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심 좌표
+    level: 5
+  });
+
+  var geocoder = new kakao.maps.services.Geocoder();
+
+  // 주소 → 좌표 변환 → 경로 표시
+  function showRoute(from, to) {
+    geocoder.addressSearch(from, function(result1, status1) {
+      if (status1 === kakao.maps.services.Status.OK) {
+        var startPos = new kakao.maps.LatLng(result1[0].y, result1[0].x);
+        geocoder.addressSearch(to, function(result2, status2) {
+          if (status2 === kakao.maps.services.Status.OK) {
+            var endPos = new kakao.maps.LatLng(result2[0].y, result2[0].x);
+
+            // 마커 찍기
+            new kakao.maps.Marker({ map: map, position: startPos });
+            new kakao.maps.Marker({ map: map, position: endPos });
+
+            // 선 긋기
+            var polyline = new kakao.maps.Polyline({
+              path: [startPos, endPos],
+              strokeWeight: 5,
+              strokeColor: '#FF0000',
+              strokeOpacity: 0.8,
+              strokeStyle: 'solid'
+            });
+            polyline.setMap(map);
+
+            // 범위에 맞게 지도 이동
+            var bounds = new kakao.maps.LatLngBounds();
+            bounds.extend(startPos);
+            bounds.extend(endPos);
+            map.setBounds(bounds);
+          }
+        });
+      }
+    });
+  }
+
+  showRoute(departure, destination);
+</script>
+
+</body>
+</html>

@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 @Setter
 public class TaxiPostDto {
     private Long id;
-    private Long writerId;
+    private String writerId;
     private String departure;
     private String destination;
-    private LocalDateTime departureTime;
+    private String departureTime;
     private Integer expectedFare;
     private String expectedTime;
     private Integer maxPeople;

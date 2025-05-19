@@ -1,5 +1,6 @@
 package com.EONET.eonet.service;
 import com.EONET.eonet.domain.Member;
+import com.EONET.eonet.domain.TaxiPost;
 import com.EONET.eonet.repository.MemberRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class MemberService {
         return memberRepository.findByUsername(memberId);
     }
 
-    public List<Member> findById(Long id) {
+    public List<Member> findById(String id) {
         return memberRepository.findById(id);
     }
 }

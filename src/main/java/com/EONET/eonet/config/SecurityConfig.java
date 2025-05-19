@@ -40,7 +40,7 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/postList", true)
+                        .defaultSuccessUrl("/api/taxi-posts/postList", true)
                         .permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll);
