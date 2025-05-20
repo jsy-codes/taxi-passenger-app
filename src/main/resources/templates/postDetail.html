@@ -28,8 +28,8 @@
 
 <script th:inline="javascript">
   // 서버에서 전달된 출발지, 도착지
-  var departure = /*[[${post.departure}]]*/ '서울역';
-  var destination = /*[[${post.destination}]]*/ '강남역';
+  var departure = '서울특별시 종로구 사직로 161';  // 서울시청
+  var destination = '서울특별시 중구 세종대로 110';
 
   var mapContainer = document.getElementById('map');
   var map = new kakao.maps.Map(mapContainer, {
@@ -67,8 +67,12 @@
             bounds.extend(startPos);
             bounds.extend(endPos);
             map.setBounds(bounds);
+          } else {
+            console.warn('도착지 주소 변환 실패');
           }
         });
+      } else {
+        console.warn('출발지 주소 변환 실패');
       }
     });
   }

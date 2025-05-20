@@ -60,7 +60,7 @@ public class TaxiPostController {
         this.memberRepository = memberRepository;
     }*/
 
-    @GetMapping("/api/taxi-posts/{id}")
+    @GetMapping("/{id}")
     public String getPostDetail(@PathVariable Long id, Model model) {
         TaxiPost post = taxiPostService.getPostById(id);
         model.addAttribute("post", post);
