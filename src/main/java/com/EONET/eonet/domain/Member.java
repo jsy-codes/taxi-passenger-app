@@ -1,6 +1,7 @@
 package com.EONET.eonet.domain;
 
 
+import com.EONET.eonet.domain.status.CardStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,6 +24,12 @@ public class Member implements UserDetails {
     private String studentId;
     @Column(nullable = false, unique = true)
     private String email; // 동아대 이메일
+
+    private String CardNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CardStatus cardStatus=CardStatus.NOT_REGISTERED;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
