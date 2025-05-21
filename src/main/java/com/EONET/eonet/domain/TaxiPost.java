@@ -19,8 +19,16 @@ public class TaxiPost {
     @JoinColumn(name = "member_id", nullable = false)
     private Member writer;
 
+    // 출발지: 사용자가 입력한 텍스트 (선택적으로 사용 가능)
     private String departure;
+
+    // 출발지: 지도에서 선택한 정확한 좌표
+    private Double departureLat;
+    private Double departureLon;
+
+    // 도착지: 정확한 주소 (선택한 건물)
     private String destination;
+
     private LocalDateTime departureTime;
     private Integer expectedFare;
     private String expectedTime;

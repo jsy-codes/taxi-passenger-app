@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>게시글 상세 보기</title>
-  <script type="text/javascript"
-          src="//dapi.kakao.com/v2/maps/sdk.js?appkey=5785ff36be13888f3f627611b39b95d7&libraries=services"></script>
+
+  <!-- ✅ Tmap 지도 스크립트 -->
+  <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0"></script>
+
+  <!-- ✅ Kakao 주소 → 좌표 변환용 스크립트 (지오코딩용) -->
+  <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=5785ff36be13888f3f627611b39b95d7&libraries=services"></script>
+
   <style>
     #map {
       width: 100%;
@@ -20,64 +25,91 @@
   <p><strong>출발지:</strong> <span th:text="${post.departure}"></span></p>
   <p><strong>도착지:</strong> <span th:text="${post.destination}"></span></p>
   <p><strong>출발 시각:</strong> <span th:text="${post.departureTime}"></span></p>
-  <p><strong>예상 요금:</strong> <span th:text="${post.expectedFare}"></span>원</p>
-  <p><strong>예상 소요 시간:</strong> <span th:text="${post.expectedTime}"></span></p>
+  <p><strong>예상 요금:</strong> <span id="fare"></span>원</p>
+  <p><strong>예상 소요 시간:</strong> <span id="time"></span></p>
 </div>
 
 <div id="map"></div>
 
 <script th:inline="javascript">
-  // 서버에서 전달된 출발지, 도착지
-  var departure = '서울특별시 종로구 사직로 161';  // 서울시청
-  var destination = '서울특별시 중구 세종대로 110';
+  // 출발지: DB에서 위도/경도 직접 받기
+  const startLat = /*[[${post.departureLat}]]*/ 37.5665;
+  const startLon = /*[[${post.departureLon}]]*/ 126.9780;
 
-  var mapContainer = document.getElementById('map');
-  var map = new kakao.maps.Map(mapContainer, {
-    center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심 좌표
-    level: 5
+  // 도착지 주소는 그대로 사용
+  const destinationAddr = /*[[${post.destination}]]*/ '서울특별시 중구 세종대로 110';
+
+  const tmapKey = 'L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0';
+
+  const map = new Tmapv2.Map("map", {
+    center: new Tmapv2.LatLng(startLat, startLon),
+    width: "100%",
+    height: "400px",
+    zoom: 15
   });
 
-  var geocoder = new kakao.maps.services.Geocoder();
+  const geocoder = new kakao.maps.services.Geocoder();
 
-  // 주소 → 좌표 변환 → 경로 표시
-  function showRoute(from, to) {
-    geocoder.addressSearch(from, function(result1, status1) {
-      if (status1 === kakao.maps.services.Status.OK) {
-        var startPos = new kakao.maps.LatLng(result1[0].y, result1[0].x);
-        geocoder.addressSearch(to, function(result2, status2) {
-          if (status2 === kakao.maps.services.Status.OK) {
-            var endPos = new kakao.maps.LatLng(result2[0].y, result2[0].x);
+  let endLat, endLon;
 
-            // 마커 찍기
-            new kakao.maps.Marker({ map: map, position: startPos });
-            new kakao.maps.Marker({ map: map, position: endPos });
+  // 도착지만 주소 → 좌표 변환
+  geocoder.addressSearch(destinationAddr, function(result, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      endLat = result[0].y;
+      endLon = result[0].x;
 
-            // 선 긋기
-            var polyline = new kakao.maps.Polyline({
-              path: [startPos, endPos],
-              strokeWeight: 5,
-              strokeColor: '#FF0000',
-              strokeOpacity: 0.8,
-              strokeStyle: 'solid'
+      getTmapRoute(startLon, startLat, endLon, endLat);
+    } else {
+      console.warn("도착지 좌표 변환 실패");
+    }
+  });
+
+  function getTmapRoute(startX, startY, endX, endY) {
+    fetch("https://apis.openapi.sk.com/tmap/routes?version=1", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "appKey": tmapKey
+      },
+      body: JSON.stringify({
+        startX: startX,
+        startY: startY,
+        endX: endX,
+        endY: endY,
+        reqCoordType: "WGS84GEO",
+        resCoordType: "WGS84GEO",
+        searchOption: 0
+      })
+    })
+            .then(res => res.json())
+            .then(data => {
+              const result = data.features;
+              const path = [];
+
+              result.forEach(feature => {
+                const coords = feature.geometry.coordinates;
+                if (feature.geometry.type === "LineString") {
+                  coords.forEach(coord => {
+                    path.push(new Tmapv2.LatLng(coord[1], coord[0]));
+                  });
+                }
+              });
+
+              new Tmapv2.Polyline({
+                path: path,
+                strokeColor: "#FF0000",
+                strokeWeight: 4,
+                map: map
+              });
+
+              map.setCenter(path[0]);
+
+              const properties = result[0].properties;
+              document.getElementById('fare').textContent = properties.taxiFare;
+              const minutes = Math.round(properties.totalTime / 60);
+              document.getElementById('time').textContent = `${minutes}분`;
             });
-            polyline.setMap(map);
-
-            // 범위에 맞게 지도 이동
-            var bounds = new kakao.maps.LatLngBounds();
-            bounds.extend(startPos);
-            bounds.extend(endPos);
-            map.setBounds(bounds);
-          } else {
-            console.warn('도착지 주소 변환 실패');
-          }
-        });
-      } else {
-        console.warn('출발지 주소 변환 실패');
-      }
-    });
   }
-
-  showRoute(departure, destination);
 </script>
 
 </body>

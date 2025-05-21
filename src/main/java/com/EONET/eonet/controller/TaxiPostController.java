@@ -70,20 +70,21 @@ public class TaxiPostController {
     // Create a new post
     @PostMapping
     public String createPost(@ModelAttribute TaxiPostDto dto) {
-
         Member writer = memberRepository.findOptionalById(dto.getWriterId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-        LocalDateTime parsedDepartureTime = LocalDateTime.parse(dto.getDepartureTime(), formatter);
 
-        TaxiPost post = new TaxiPost(
-                writer,
-                dto.getDeparture(),
-                dto.getDestination(),
-                parsedDepartureTime,
-                dto.getExpectedFare(),
-                dto.getExpectedTime()
-        );
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        LocalDateTime parsedTime = LocalDateTime.parse(dto.getDepartureTime(), formatter);
+
+        TaxiPost post = new TaxiPost();
+        post.setWriter(writer);
+        post.setDestination(dto.getDestination());
+        post.setDepartureTime(parsedTime);
+        post.setDepartureLat(dto.getDepartureLat());
+        post.setDepartureLon(dto.getDepartureLon());
+        post.setExpectedFare(dto.getExpectedFare());
+        post.setExpectedTime(dto.getExpectedTime());
+
         taxiPostRepository.save(post);
         return "redirect:/api/taxi-posts/postList";
     }

@@ -3,31 +3,39 @@
 <head>
     <title>게시글 작성</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- TMAP 지도 SDK -->
+    <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0"></script>
+    <style>
+        #map { height: 400px; width: 100%; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
 
 <div class="container mt-5">
     <h2 class="mb-4">게시글 작성</h2>
     <form action="/api/taxi-posts" method="post" class="needs-validation" novalidate>
+        <!-- 도착지: 고정 선택지 -->
         <div class="mb-3">
-            <label for="departure" class="form-label">출발지</label>
-            <input type="text" class="form-control" id="departure" name="departure" required>
+            <label for="destination" class="form-label">도착지(건물 선택)</label>
+            <select class="form-select" id="destination" name="destination" required>
+                <option value="" disabled selected>건물을 선택하세요</option>
+                <option value="부산 사하구 낙동대로516번길 56">동아대 입구</option>
+                <option value="부산 사하구 낙동대로550번길 37">동아대 캠퍼스</option>
+            </select>
         </div>
+
+        <!-- 출발지: 지도 클릭으로 좌표 입력 -->
         <div class="mb-3">
-            <label for="destination" class="form-label">도착지</label>
-            <input type="text" class="form-control" id="destination" name="destination" required>
+            <label class="form-label">출발지(지도를 클릭해서 선택하세요)</label>
+            <div id="map"></div>
         </div>
+        <input type="hidden" id="departureLat" name="departureLat" required>
+        <input type="hidden" id="departureLon" name="departureLon" required>
+
+        <!-- 출발 시간 -->
         <div class="mb-3">
             <label for="departureTime" class="form-label">출발 시간</label>
             <input type="datetime-local" class="form-control" id="departureTime" name="departureTime" required>
-        </div>
-        <div class="mb-3">
-            <label for="expectedFare" class="form-label">예상 요금</label>
-            <input type="number" class="form-control" id="expectedFare" name="expectedFare" required>
-        </div>
-        <div class="mb-3">
-            <label for="expectedTime" class="form-label">예상 소요 시간</label>
-            <input type="text" class="form-control" id="expectedTime" name="expectedTime" required>
         </div>
 
         <!-- 로그인한 사용자 ID는 숨겨서 넘김 -->
@@ -37,5 +45,31 @@
         <a href="/api/taxi-posts/postList" class="btn btn-secondary">취소</a>
     </form>
 </div>
+
+<script>
+    const map = new Tmapv2.Map("map", {
+        center: new Tmapv2.LatLng(35.1046, 128.9665), // 하단역 기준 초기 위치
+        width: "100%",
+        height: "400px",
+        zoom: 15
+    });
+
+    let marker;
+
+    map.addListener("click", function(evt) {
+        const lat = evt.latLng.lat();
+        const lon = evt.latLng.lng();
+
+        document.getElementById("departureLat").value = lat;
+        document.getElementById("departureLon").value = lon;
+
+        if (marker) marker.setMap(null); // 기존 마커 제거
+        marker = new Tmapv2.Marker({
+            position: new Tmapv2.LatLng(lat, lon),
+            map: map
+        });
+    });
+</script>
+
 </body>
 </html>
