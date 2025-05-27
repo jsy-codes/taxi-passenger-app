@@ -9,7 +9,7 @@
         async function joinPost(postId) {
             const StudentId = 1; // StudentID 값 불러와야함
 
-            const response = await fetch(`/api/taxi-posts/${postId}/join?memberId=${memberId}`, {
+            const response = await fetch(`/api/taxi-posts/${postId}/join?StudentId=${StudentId}`, {
                 method: 'POST'
             });
 
