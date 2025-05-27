@@ -19,25 +19,32 @@
   </style>
 </head>
 <body>
-<h1>게시글 상세</h1>
+<div class="container mt-5 p-4 bg-white shadow rounded" style="max-width: 800px;">
+  <h1 class="mb-4 fw-bold">게시글 상세</h1>
 
-<div>
   <p><strong>출발지:</strong> <span th:text="${post.departure}"></span></p>
   <p><strong>도착지:</strong> <span th:text="${post.destination}"></span></p>
   <p><strong>출발 시각:</strong> <span th:text="${post.departureTime}"></span></p>
   <p><strong>예상 요금:</strong> <span id="fare"></span>원</p>
   <p><strong>예상 소요 시간:</strong> <span id="time"></span></p>
+
+  <div id="map" class="my-4" style="height: 400px; border-radius: 10px; overflow: hidden;"></div>
+
+  <!-- 돌아가기 버튼 -->
+  <div class="text-center">
+    <a href="/api/taxi-posts/postList" class="btn btn-outline-primary px-4 py-2 rounded-pill">
+      ← 목록으로 돌아가기
+    </a>
+  </div>
 </div>
 
-<div id="map"></div>
-
 <script th:inline="javascript">
-  // 출발지: DB에서 위도/경도 직접 받기
   const startLat = /*[[${post.departureLat}]]*/ 37.5665;
   const startLon = /*[[${post.departureLon}]]*/ 126.9780;
 
-  // 도착지 주소는 그대로 사용
-  const destinationAddr = /*[[${post.destination}]]*/ '서울특별시 중구 세종대로 110';
+  // ✅ 도착지도 DB에 저장된 위/경도 사용
+  const endLat = /*[[${post.destinationLat}]]*/ 35.11469;
+  const endLon = /*[[${post.destinationLon}]]*/ 128.9665;
 
   const tmapKey = 'L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0';
 
@@ -48,21 +55,7 @@
     zoom: 15
   });
 
-  const geocoder = new kakao.maps.services.Geocoder();
-
-  let endLat, endLon;
-
-  // 도착지만 주소 → 좌표 변환
-  geocoder.addressSearch(destinationAddr, function(result, status) {
-    if (status === kakao.maps.services.Status.OK) {
-      endLat = result[0].y;
-      endLon = result[0].x;
-
-      getTmapRoute(startLon, startLat, endLon, endLat);
-    } else {
-      console.warn("도착지 좌표 변환 실패");
-    }
-  });
+  getTmapRoute(startLon, startLat, endLon, endLat);
 
   function getTmapRoute(startX, startY, endX, endY) {
     fetch("https://apis.openapi.sk.com/tmap/routes?version=1", {
@@ -72,10 +65,7 @@
         "appKey": tmapKey
       },
       body: JSON.stringify({
-        startX: startX,
-        startY: startY,
-        endX: endX,
-        endY: endY,
+        startX, startY, endX, endY,
         reqCoordType: "WGS84GEO",
         resCoordType: "WGS84GEO",
         searchOption: 0
@@ -87,9 +77,8 @@
               const path = [];
 
               result.forEach(feature => {
-                const coords = feature.geometry.coordinates;
                 if (feature.geometry.type === "LineString") {
-                  coords.forEach(coord => {
+                  feature.geometry.coordinates.forEach(coord => {
                     path.push(new Tmapv2.LatLng(coord[1], coord[0]));
                   });
                 }
@@ -111,6 +100,3 @@
             });
   }
 </script>
-
-</body>
-</html>

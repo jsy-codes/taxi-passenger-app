@@ -28,6 +28,9 @@ public class TaxiPost {
 
     // 도착지: 정확한 주소 (선택한 건물)
     private String destination;
+    private Double destinationLat;
+    private Double destinationLon;
+
 
     private LocalDateTime departureTime;
     private Integer expectedFare;

@@ -3,52 +3,74 @@
 <head>
     <title>게시글 작성</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- TMAP 지도 SDK -->
+
+    <!-- ✅ TMAP 지도 SDK -->
     <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0"></script>
+
     <style>
-        #map { height: 400px; width: 100%; margin-bottom: 20px; }
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container mt-5">
     <h2 class="mb-4">게시글 작성</h2>
+
+    <!-- ✅ 폼 시작 -->
     <form action="/api/taxi-posts" method="post" class="needs-validation" novalidate>
-        <!-- 도착지: 고정 선택지 -->
+
+        <!-- ✅ 도착지 선택 -->
         <div class="mb-3">
-            <label for="destination" class="form-label">도착지(건물 선택)</label>
-            <select class="form-select" id="destination" name="destination" required>
+            <label for="destinationSelect" class="form-label">도착지 (건물 선택)</label>
+            <select class="form-select" id="destinationSelect" required onchange="updateDestinationCoords()">
                 <option value="" disabled selected>건물을 선택하세요</option>
-                <option value="부산 사하구 낙동대로516번길 56">동아대 입구</option>
-                <option value="부산 사하구 낙동대로550번길 37">동아대 캠퍼스</option>
+                <option value="정문" data-lat="35.11368" data-lon="128.9658">정문</option>
+                <option value="한림 생활관" data-lat="35.11826" data-lon="128.9691">한림 생활관</option>
+                <option value="공과대학2호관,도서관" data-lat="35.11603" data-lon="128.9674">공과대학2호관,도서관</option>
+                <option value="인문과학대,체육관" data-lat="35.11467" data-lon="128.9659">인문과학대,체육관</option>
             </select>
         </div>
 
-        <!-- 출발지: 지도 클릭으로 좌표 입력 -->
+        <!-- ✅ 도착지: 숨겨진 실제 값 전달 -->
+        <input type="hidden" id="destination" name="destination" required>
+        <input type="hidden" id="destinationLat" name="destinationLat" required>
+        <input type="hidden" id="destinationLon" name="destinationLon" required>
+
+
+        <!-- ✅ 출발지: 지도에서 선택 -->
+        <p id="selectedAddress" class="text-muted mt-2"></p>
         <div class="mb-3">
-            <label class="form-label">출발지(지도를 클릭해서 선택하세요)</label>
+            <label class="form-label">출발지 (지도를 클릭해서 선택하세요)</label>
             <div id="map"></div>
         </div>
         <input type="hidden" id="departureLat" name="departureLat" required>
         <input type="hidden" id="departureLon" name="departureLon" required>
+        <input type="hidden" id="departure" name="departure" required>
 
-        <!-- 출발 시간 -->
+        <!-- ✅ 출발 시간 -->
         <div class="mb-3">
             <label for="departureTime" class="form-label">출발 시간</label>
             <input type="datetime-local" class="form-control" id="departureTime" name="departureTime" required>
         </div>
 
-        <!-- 로그인한 사용자 ID는 숨겨서 넘김 -->
+        <!-- ✅ 로그인한 사용자 ID -->
         <input type="hidden" name="writerId" th:value="${memberId}"/>
 
+        <!-- ✅ 등록/취소 버튼 -->
         <button type="submit" class="btn btn-success">등록</button>
         <a href="/api/taxi-posts/postList" class="btn btn-secondary">취소</a>
     </form>
 </div>
 
+<!-- ✅ 스크립트 -->
 <script>
+    // ✅ 지도 초기화
     const map = new Tmapv2.Map("map", {
-        center: new Tmapv2.LatLng(35.1046, 128.9665), // 하단역 기준 초기 위치
+        center: new Tmapv2.LatLng(35.1046, 128.9665), // 하단역
         width: "100%",
         height: "400px",
         zoom: 15
@@ -56,6 +78,7 @@
 
     let marker;
 
+    // ✅ 지도 클릭 시 출발지 위경도 설정
     map.addListener("click", function(evt) {
         const lat = evt.latLng.lat();
         const lon = evt.latLng.lng();
@@ -63,12 +86,39 @@
         document.getElementById("departureLat").value = lat;
         document.getElementById("departureLon").value = lon;
 
-        if (marker) marker.setMap(null); // 기존 마커 제거
+        if (marker) marker.setMap(null);
         marker = new Tmapv2.Marker({
             position: new Tmapv2.LatLng(lat, lon),
             map: map
         });
+
+        fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lon}&y=${lat}`, {
+            headers: {
+                Authorization: "KakaoAK 2077fc07239acac80bbfd6c0095e1728"
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.documents.length > 0) {
+                    const address = data.documents[0].road_address
+                        ? data.documents[0].road_address.address_name
+                        : data.documents[0].address.address_name;
+
+                    document.getElementById("departure").value = address;
+                    document.getElementById("selectedAddress").textContent = "선택된 출발지: " + address;
+                }
+            });
     });
+
+    // ✅ 도착지 select 변경 시 값 설정
+    function updateDestinationCoords() {
+        const select = document.getElementById("destinationSelect");
+        const option = select.options[select.selectedIndex];
+
+        document.getElementById("destination").value = option.value;
+        document.getElementById("destinationLat").value = option.getAttribute("data-lat");
+        document.getElementById("destinationLon").value = option.getAttribute("data-lon");
+    }
 </script>
 
 </body>
