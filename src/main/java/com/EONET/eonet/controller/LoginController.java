@@ -1,6 +1,7 @@
 package com.EONET.eonet.controller;
 
 import com.EONET.eonet.domain.Member;
+import com.EONET.eonet.domain.status.CardStatus;
 import com.EONET.eonet.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -32,5 +33,19 @@ public class LoginController {
             return memberService.findByUsername(authentication.getName()); // ID 기반으로 DB에서 조회
         }
         return null;
+    }
+
+    @GetMapping("/login/success")
+    public String loginSuccessRedirect() {
+        Member member = getLoggedInMember();
+        if (member == null) {
+            return "redirect:/login";
+        }
+
+        if (member.getCardStatus() == CardStatus.NOT_REGISTERED) {
+            return "redirect:/cardRegister";
+        } else {
+            return "redirect:/postList";
+        }
     }
 }

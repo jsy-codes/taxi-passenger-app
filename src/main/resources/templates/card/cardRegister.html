@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>카드 등록</title>
+</head>
+<body>
+<h1>카드 등록</h1>
+<form th:action="@{/card/register}" method="post">
+    <label>카드 번호: </label>
+    <input type="text" name="cardNumber" placeholder="1234-5678-9012-3456" required />
+    <button type="submit">등록</button>
+</form>
+</body>
+</html>
