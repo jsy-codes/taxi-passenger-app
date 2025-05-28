@@ -16,6 +16,8 @@ public class TaxiPostDto {
     // 출발지: 좌표로 저장
     private Double departureLat;
     private Double departureLon;
+    private Double destinationLat;
+    private Double destinationLon;
 
     // 기존 그대로
     private Integer expectedFare;

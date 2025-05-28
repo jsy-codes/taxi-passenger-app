@@ -79,7 +79,10 @@ public class TaxiPostController {
         TaxiPost post = new TaxiPost();
         post.setWriter(writer);
         post.setDestination(dto.getDestination());
+        post.setDeparture(dto.getDeparture());
         post.setDepartureTime(parsedTime);
+        post.setDestinationLat(dto.getDestinationLat());
+        post.setDestinationLon(dto.getDestinationLon());
         post.setDepartureLat(dto.getDepartureLat());
         post.setDepartureLon(dto.getDepartureLon());
         post.setExpectedFare(dto.getExpectedFare());

@@ -23,6 +23,7 @@
             <th>출발 시간</th>
             <th>요금</th>
             <th>상태</th>
+            <th>상세</th> <!-- 👈 새로 추가된 열 제목 -->
         </tr>
         </thead>
         <tbody>
@@ -33,6 +34,9 @@
             <td th:text="${post.departureTime}">시간</td>
             <td th:text="${post.expectedFare}">금액</td>
             <td th:text="${post.status}">상태</td>
+            <td>
+                <a th:href="@{/api/taxi-posts/{id}(id=${post.id})}" class="btn btn-sm btn-outline-primary">상세 보기</a>
+            </td>
         </tr>
         </tbody>
     </table>
