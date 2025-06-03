@@ -2,6 +2,8 @@ package com.EONET.eonet.repository;
 import com.EONET.eonet.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -9,6 +11,9 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+
+
+
 public class MemberRepository  {
 
     private final EntityManager em;
