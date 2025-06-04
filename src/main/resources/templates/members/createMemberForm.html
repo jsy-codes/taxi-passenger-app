@@ -54,6 +54,10 @@
             <input type="password" class="form-control" id="confirmPassword" placeholder="비밀번호 재입력" required>
             <!-- 참고: 이 필드는 MemberForm에 없으므로, 유효성 검사를 원한다면 MemberForm에 추가하거나 JS로만 검증 -->
         </div>
+        <div class="mb-3">
+            <label for="cardNumber" class="form-label">카드 번호</label>
+            <input type="text" th:field="*{cardNumber}" class="form-control" id="cardNumber" placeholder="카드 번호를 입력하세요">
+        </div>
         <div class="d-grid mb-3">
             <button type="submit" class="btn btn-success">회원가입</button>
         </div>

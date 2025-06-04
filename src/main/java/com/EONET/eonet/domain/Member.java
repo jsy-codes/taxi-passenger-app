@@ -25,7 +25,7 @@ public class Member implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email; // 동아대 이메일
 
-    private String CardNumber;
+    private String cardNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

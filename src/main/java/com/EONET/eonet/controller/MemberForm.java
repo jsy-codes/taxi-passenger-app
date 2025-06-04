@@ -17,4 +17,6 @@ public class MemberForm {
     @NotEmpty(message = "동아대 이메일은 필수 입니다")
     private String email;
 
+    @NotEmpty(message = "카드 번호는 필수 입니다")
+    private String cardNumber;
 }

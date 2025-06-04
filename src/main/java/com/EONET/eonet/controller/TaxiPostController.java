@@ -11,13 +11,16 @@ import com.EONET.eonet.domain.TaxiPost;
 import com.EONET.eonet.dto.TaxiPostDto;
 import com.EONET.eonet.repository.MemberRepository;
 import com.EONET.eonet.repository.TaxiPostRepository;
+import com.EONET.eonet.service.CommentService;
 import com.EONET.eonet.service.MemberService;
 import com.EONET.eonet.service.TaxiPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +42,8 @@ public class TaxiPostController {
     private final MemberRepository memberRepository;
     private final MemberService memberService;
     private final TaxiPostService taxiPostService;
+    private final CommentService commentService;
+
     @RequestMapping("/postList")
     public String postList(Model model) {
         log.info("post controller");
@@ -127,4 +132,14 @@ public class TaxiPostController {
 
         return "post/createPost"; // templates/post/createPost.html로 렌더링
     }
+
+    @PostMapping("/api/comments")
+    public String saveComment(@RequestParam Long postId,
+                              @RequestParam String content,
+                              @AuthenticationPrincipal UserDetails userDetails) {
+        Member member = memberService.findByUsername(userDetails.getUsername());
+        commentService.saveComment(postId, content, member);
+        return "redirect:/api/taxi-posts/" + postId;
+    }
+
 }
