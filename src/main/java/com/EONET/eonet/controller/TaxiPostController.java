@@ -137,7 +137,8 @@ public class TaxiPostController {
 
         TaxiPost post = taxiPostRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("게시글 없음"));
-        Member student = memberRepository.findById(String.valueOf(StudentId))
+        String studentIdStr = String.valueOf(StudentId);
+        Member student = memberRepository.findOptionalById(studentIdStr)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
         long currentCount = post.getParticipants().size();
