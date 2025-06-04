@@ -28,6 +28,13 @@
   <p><strong>예상 요금:</strong> <span id="fare"></span>원</p>
   <p><strong>예상 소요 시간:</strong> <span id="time"></span></p>
 
+    <button class="btn btn-success btn-sm"
+            th:onclick="'joinPost(' + ${post.id} + ')'"
+            th:disabled="${post.participants.size() >= 4}">
+      참여
+    </button>
+  <p th:text="${post.participants.size()} + ' / 4'">0 / 4</p>
+
   <div id="map" class="my-4" style="height: 400px; border-radius: 10px; overflow: hidden;"></div>
 
   <!-- 돌아가기 버튼 -->
