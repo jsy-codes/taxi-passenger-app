@@ -18,8 +18,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomLoginSuccessHandler customLoginSuccessHandler;
-
     @Bean
     public static BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -42,7 +40,7 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .successHandler(customLoginSuccessHandler)
+                        .defaultSuccessUrl("/api/taxi-posts/postList", true)
                         .permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll);

@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -39,6 +41,9 @@ public class TaxiPost {
 
     @Enumerated(EnumType.STRING)
     private PostStatus status = PostStatus.RECRUITING;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     // Constructors
 
