@@ -23,6 +23,12 @@
     <!-- ✅ 폼 시작 -->
     <form action="/api/taxi-posts" method="post" class="needs-validation" novalidate>
 
+        <div class="mb-3">
+            <strong>로그인한 사용자:</strong>
+            <span th:text="${memberId}">아이디</span> /
+            <span th:text="${studentId}">학번</span>
+        </div>
+
         <!-- ✅ 도착지 선택 -->
         <div class="mb-3">
             <label for="destinationSelect" class="form-label">도착지 (건물 선택)</label>
@@ -70,15 +76,65 @@
 <script>
     // ✅ 지도 초기화
     const map = new Tmapv2.Map("map", {
-        center: new Tmapv2.LatLng(35.1046, 128.9665), // 하단역
+        center: new Tmapv2.LatLng(35.1046, 128.9665),
         width: "100%",
         height: "400px",
         zoom: 15
     });
 
-    let marker;
+    let openInfoWindow = null;  // 현재 열려 있는 말풍선
+    let marker = null;          // 지도 클릭 마커
 
-    // ✅ 지도 클릭 시 출발지 위경도 설정
+    // ✅ 여러 개 마커 + 클릭 시 출발지 자동설정
+    const predefinedMarkers = [
+        { name: "하단역 8번출구", lat: 35.10603, lon: 128.9671 },
+        { name: "하단역 9번출구", lat: 35.10652, lon: 128.9685 },
+        { name: "동아대 버스정류장", lat: 35.11355, lon: 128.9632 },
+        { name: "하단역 2번출구", lat: 35.10603, lon: 128.9647 }
+    ];
+
+    predefinedMarkers.forEach(loc => {
+        const markerObj = new Tmapv2.Marker({
+            position: new Tmapv2.LatLng(loc.lat, loc.lon),
+            map: map
+        });
+
+        const infoWindow = new Tmapv2.InfoWindow({
+            position: new Tmapv2.LatLng(loc.lat, loc.lon),
+            content: `<div style='background:white;padding:5px;border-radius:5px;'>${loc.name}</div>`,
+            type: 2,
+            map: null
+        });
+
+        markerObj.addListener("click", () => {
+            // ✅ 이전 InfoWindow 닫기
+            if (openInfoWindow) openInfoWindow.setMap(null);
+
+            // ✅ 기존 지도 클릭 마커가 있다면 제거
+            if (marker) {
+                marker.setMap(null);
+                marker = null;
+            }
+
+            // ✅ 새 InfoWindow 강제로 다시 생성
+            const newInfoWindow = new Tmapv2.InfoWindow({
+                position: new Tmapv2.LatLng(loc.lat, loc.lon),
+                content: `<div style='background:white;padding:5px;border-radius:5px;'>${loc.name}</div>`,
+                type: 2,
+                map: map
+            });
+
+            openInfoWindow = newInfoWindow;
+
+            // ✅ 출발지 자동 설정
+            document.getElementById("departureLat").value = loc.lat;
+            document.getElementById("departureLon").value = loc.lon;
+            document.getElementById("departure").value = loc.name;
+            document.getElementById("selectedAddress").textContent = "선택된 출발지: " + loc.name;
+        });
+    });
+
+    // ✅ 지도 클릭 시 출발지 수동 선택 (Kakao 주소 변환)
     map.addListener("click", function(evt) {
         const lat = evt.latLng.lat();
         const lon = evt.latLng.lng();
@@ -110,7 +166,7 @@
             });
     });
 
-    // ✅ 도착지 select 변경 시 값 설정
+    // ✅ 도착지 select → 좌표 설정
     function updateDestinationCoords() {
         const select = document.getElementById("destinationSelect");
         const option = select.options[select.selectedIndex];

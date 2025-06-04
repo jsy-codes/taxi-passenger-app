@@ -97,6 +97,16 @@
               document.getElementById('fare').textContent = properties.taxiFare;
               const minutes = Math.round(properties.totalTime / 60);
               document.getElementById('time').textContent = `${minutes}분`;
+
+              const startMarker = new Tmapv2.Marker({
+                position: new Tmapv2.LatLng(startLat, startLon),
+                map: map
+              });
+
+              const endMarker = new Tmapv2.Marker({
+                position: new Tmapv2.LatLng(endLat, endLon),
+                map: map
+              });
             });
   }
 </script>
