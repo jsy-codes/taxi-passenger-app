@@ -127,7 +127,8 @@ public class TaxiPostController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getName() != null) {
             Member member = memberService.findByUsername(auth.getName());
-            model.addAttribute("memberId", member.getId()); // createPost.html로 넘김
+            model.addAttribute("memberId", member.getId());// createPost.html로 넘김
+            model.addAttribute("studentId", member.getStudentId());
         }
 
         return "post/createPost"; // templates/post/createPost.html로 렌더링
