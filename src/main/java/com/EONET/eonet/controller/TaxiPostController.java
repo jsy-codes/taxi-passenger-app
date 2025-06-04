@@ -67,10 +67,32 @@ public class TaxiPostController {
 
     @GetMapping("/{id}")
     public String getPostDetail(@PathVariable Long id, Model model) {
+        // 1) 게시글(포스트) 가져오기
         TaxiPost post = taxiPostService.getPostById(id);
         model.addAttribute("post", post);
-        return "postDetail"; // postDetail.html로 이동
-    }
+
+        // 2) 현재 로그인한 사용자 가져오기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            Member loginMember = memberService.findByUsername(auth.getName());
+            // 3) 작성자(member)와 로그인 사용자 비교
+            boolean isOwner = loginMember.getId().equals(post.getWriter().getId());
+            model.addAttribute("isOwner", isOwner);
+            //  로그인 사용자 정보를 뷰에 직접 넘기고 싶으면
+            model.addAttribute("loginMember", loginMember);
+        } else {
+            // 비로그인 상태면 무조건 false
+            model.addAttribute("isOwner", false);
+        }
+
+        return "postDetail"; // resources/templates/postDetail.html
+    }/*
+    // 보통은 @DeleteMapping을 쓰기도 하지만, form 태그에서 delete 못 쓰기 때문에 POST로 대체
+    @PostMapping("/{id}/delete")
+    public String deletePost(@PathVariable Long id) {
+        taxiPostService.deletePostById(id); // 서비스 계층에서 단순 삭제 로직 수행
+        return "redirect:/api/taxi-posts/postList";
+    }*/
 
     // Create a new post
     @PostMapping
@@ -127,7 +149,8 @@ public class TaxiPostController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getName() != null) {
             Member member = memberService.findByUsername(auth.getName());
-            model.addAttribute("memberId", member.getId()); // createPost.html로 넘김
+            model.addAttribute("memberId", member.getId());// createPost.html로 넘김
+            model.addAttribute("studentId", member.getStudentId());
         }
 
         return "post/createPost"; // templates/post/createPost.html로 렌더링
