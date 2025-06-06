@@ -11,6 +11,7 @@ import com.EONET.eonet.domain.TaxiParticipant;
 import com.EONET.eonet.domain.TaxiPost;
 import com.EONET.eonet.dto.TaxiPostDto;
 import com.EONET.eonet.repository.MemberRepository;
+import com.EONET.eonet.repository.TaxiParticipantRepository;
 import com.EONET.eonet.repository.TaxiPostRepository;
 import com.EONET.eonet.service.MemberService;
 import com.EONET.eonet.service.TaxiPostService;
@@ -40,6 +41,8 @@ public class TaxiPostController {
     private final MemberRepository memberRepository;
     private final MemberService memberService;
     private final TaxiPostService taxiPostService;
+    private final TaxiParticipantRepository taxiParticipantRepository;
+
     @RequestMapping("/postList")
     public String postList(Model model) {
         log.info("post controller");
@@ -153,11 +156,10 @@ public class TaxiPostController {
         }
 
         TaxiParticipant participant = new TaxiParticipant();
-        participant.setTaxiPost(post);
+        participant.setPost(post);
         participant.setMember(student);
 
-        post.getParticipants().add(participant);
-        taxiPostRepository.save(post);
+        taxiParticipantRepository.save(participant);
 
         return ResponseEntity.ok("참여가 완료되었습니다.");
     }
