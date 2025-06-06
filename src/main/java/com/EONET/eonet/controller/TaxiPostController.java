@@ -7,20 +7,18 @@ package com.EONET.eonet.controller;
 //import com.example.project.repository.TaxiPostRepository;
 //import com.example.project.repository.MemberRepository;
 import com.EONET.eonet.domain.Member;
+import com.EONET.eonet.domain.TaxiParticipant;
 import com.EONET.eonet.domain.TaxiPost;
 import com.EONET.eonet.dto.TaxiPostDto;
 import com.EONET.eonet.repository.MemberRepository;
 import com.EONET.eonet.repository.TaxiPostRepository;
-import com.EONET.eonet.service.CommentService;
 import com.EONET.eonet.service.MemberService;
 import com.EONET.eonet.service.TaxiPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -42,8 +40,6 @@ public class TaxiPostController {
     private final MemberRepository memberRepository;
     private final MemberService memberService;
     private final TaxiPostService taxiPostService;
-    private final CommentService commentService;
-
     @RequestMapping("/postList")
     public String postList(Model model) {
         log.info("post controller");
@@ -127,20 +123,42 @@ public class TaxiPostController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getName() != null) {
             Member member = memberService.findByUsername(auth.getName());
-            model.addAttribute("memberId", member.getId());// createPost.html로 넘김
-            model.addAttribute("studentId", member.getStudentId());
+            model.addAttribute("memberId", member.getId()); // createPost.html로 넘김
         }
 
         return "post/createPost"; // templates/post/createPost.html로 렌더링
     }
 
-    @PostMapping("/api/comments")
-    public String saveComment(@RequestParam Long postId,
-                              @RequestParam String content,
-                              @AuthenticationPrincipal UserDetails userDetails) {
-        Member member = memberService.findByUsername(userDetails.getUsername());
-        commentService.saveComment(postId, content, member);
-        return "redirect:/api/taxi-posts/" + postId;
-    }
+    @PostMapping("/{postId}/join")
+    @ResponseBody
+    public ResponseEntity<String> joinPost(
+            @PathVariable Long postId,
+            @RequestParam Long StudentId) {
 
+        TaxiPost post = taxiPostRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+        String studentIdStr = String.valueOf(StudentId);
+        Member student = memberRepository.findOptionalById(studentIdStr)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+        long currentCount = post.getParticipants().size();
+
+        if (currentCount >= 4) {
+            return ResponseEntity.badRequest().body("참여 인원이 가득 찼습니다.");
+        }
+        boolean alreadyJoined = post.getParticipants().stream()
+                .anyMatch(p -> p.getMember().getId().equals(StudentId));
+        if (alreadyJoined) {
+            return ResponseEntity.badRequest().body("이미 참여하셨습니다.");
+        }
+
+        TaxiParticipant participant = new TaxiParticipant();
+        participant.setTaxiPost(post);
+        participant.setMember(student);
+
+        post.getParticipants().add(participant);
+        taxiPostRepository.save(post);
+
+        return ResponseEntity.ok("참여가 완료되었습니다.");
+    }
 }

@@ -60,6 +60,9 @@ public class TaxiPost {
         this.expectedFare = expectedFare;
         this.expectedTime = expectedTime;
     }
+    @OneToMany(mappedBy = "taxiPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TaxiParticipant> participants = new ArrayList<>();
+
 
 }
 
