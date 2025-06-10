@@ -16,24 +16,42 @@
       height: 400px;
       margin-top: 20px;
     }
+    .btn-group {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
   </style>
 </head>
 <body>
 <div class="container mt-5 p-4 bg-white shadow rounded" style="max-width: 800px;">
   <h1 class="mb-4 fw-bold">게시글 상세</h1>
 
+  <!-- 게시글 정보 -->
   <p><strong>출발지:</strong> <span th:text="${post.departure}"></span></p>
   <p><strong>도착지:</strong> <span th:text="${post.destination}"></span></p>
   <p><strong>출발 시각:</strong> <span th:text="${post.departureTime}"></span></p>
   <p><strong>예상 요금:</strong> <span id="fare"></span>원</p>
   <p><strong>예상 소요 시간:</strong> <span id="time"></span></p>
 
-  <!-- ✅ 지도 + 댓글 영역을 나란히 배치 -->
+  <!-- ✅ 작성자 본인일 때만 “삭제”와 “수정” 버튼 노출 -->
+  <div class="btn-group" th:if="${isOwner}">
+    <!-- 삭제 버튼 -->
+    <form th:action="@{'/api/taxi-posts/' + ${post.id} + '/delete'}" method="post"
+          th:object="${post}">
+      <button type="submit" class="btn btn-danger btn-sm">삭제하기</button>
+    </form>
+    <!-- 수정 버튼 (원하면 경로/컨트롤러 구현) -->
+    <a th:href="@{'/api/taxi-posts/' + ${post.id} + '/edit'}" class="btn btn-secondary btn-sm">수정하기</a>
+  </div>
+
+  <!-- 지도 + 댓글 영역을 나란히 배치 -->
   <div class="row my-4">
     <!-- 지도 영역 -->
     <div class="col-md-7">
       <div id="map" style="height: 400px; border-radius: 10px; overflow: hidden;"></div>
     </div>
+
     <!-- 댓글 영역 -->
     <div class="col-md-5">
       <h5 class="mb-3">댓글</h5>
@@ -56,7 +74,6 @@
         <button type="submit" class="btn btn-sm btn-primary">댓글 달기</button>
       </form>
     </div>
-
   </div>
 
   <!-- 돌아가기 버튼 -->
@@ -71,7 +88,7 @@
   const startLat = /*[[${post.departureLat}]]*/ 37.5665;
   const startLon = /*[[${post.departureLon}]]*/ 126.9780;
 
-  // ✅ 도착지도 DB에 저장된 위/경도 사용
+  // 도착지 위/경도 (DB에 저장된 값 사용)
   const endLat = /*[[${post.destinationLat}]]*/ 35.11469;
   const endLon = /*[[${post.destinationLon}]]*/ 128.9665;
 
@@ -126,6 +143,18 @@
               document.getElementById('fare').textContent = properties.taxiFare;
               const minutes = Math.round(properties.totalTime / 60);
               document.getElementById('time').textContent = `${minutes}분`;
+
+              const startMarker = new Tmapv2.Marker({
+                position: new Tmapv2.LatLng(startLat, startLon),
+                map: map
+              });
+
+              const endMarker = new Tmapv2.Marker({
+                position: new Tmapv2.LatLng(endLat, endLon),
+                map: map
+              });
             });
   }
 </script>
+</body>
+</html>
