@@ -37,8 +37,8 @@
   <!-- ✅ 작성자 본인일 때만 “삭제”와 “수정” 버튼 노출 -->
   <div class="btn-group" th:if="${isOwner}">
     <!-- 삭제 버튼 -->
-    <form th:action="@{'/api/taxi-posts/' + ${post.id} + '/delete'}" method="post"
-          th:object="${post}">
+    <form th:action="@{'/api/taxi-posts/' + ${post.id} + '/delete'}" method="post" th:object="${post}"
+          onsubmit="return confirm('정말 삭제하시겠습니까?');">
       <button type="submit" class="btn btn-danger btn-sm">삭제하기</button>
     </form>
     <!-- 수정 버튼 (원하면 경로/컨트롤러 구현) -->

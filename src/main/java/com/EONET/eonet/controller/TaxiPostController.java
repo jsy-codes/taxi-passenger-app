@@ -86,13 +86,20 @@ public class TaxiPostController {
         }
 
         return "postDetail"; // resources/templates/postDetail.html
-    }/*
-    // 보통은 @DeleteMapping을 쓰기도 하지만, form 태그에서 delete 못 쓰기 때문에 POST로 대체
+    }
     @PostMapping("/{id}/delete")
     public String deletePost(@PathVariable Long id) {
-        taxiPostService.deletePostById(id); // 서비스 계층에서 단순 삭제 로직 수행
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            throw new SecurityException("로그인이 필요합니다.");
+        }
+
+        Member loginMember = memberService.findByUsername(auth.getName());
+        taxiPostService.deletePost(id, loginMember.getId());
+
         return "redirect:/api/taxi-posts/postList";
-    }*/
+    }
 
     // Create a new post
     @PostMapping
