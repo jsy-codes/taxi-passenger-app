@@ -80,6 +80,10 @@ public class TaxiPostController {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
         LocalDateTime parsedTime = LocalDateTime.parse(dto.getDepartureTime(), formatter);
+        int fare = taxiPostService.calculateFareFromTmap(
+                dto.getDepartureLat(), dto.getDepartureLon(),
+                dto.getDestinationLat(), dto.getDestinationLon()
+        );
 
         TaxiPost post = new TaxiPost();
         post.setWriter(writer);
@@ -90,8 +94,9 @@ public class TaxiPostController {
         post.setDestinationLon(dto.getDestinationLon());
         post.setDepartureLat(dto.getDepartureLat());
         post.setDepartureLon(dto.getDepartureLon());
-        post.setExpectedFare(dto.getExpectedFare());
+        post.setExpectedFare(fare);
         post.setExpectedTime(dto.getExpectedTime());
+
 
         taxiPostRepository.save(post);
         return "redirect:/api/taxi-posts/postList";

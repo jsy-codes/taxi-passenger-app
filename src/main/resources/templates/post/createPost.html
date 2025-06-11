@@ -74,98 +74,117 @@
 
 <!-- ✅ 스크립트 -->
 <script>
-    // ✅ 지도 초기화
-    const map = new Tmapv2.Map("map", {
-        center: new Tmapv2.LatLng(35.1046, 128.9665),
-        width: "100%",
-        height: "400px",
-        zoom: 15
-    });
-
+    let map;
     let openInfoWindow = null;  // 현재 열려 있는 말풍선
     let marker = null;          // 지도 클릭 마커
-
-    // ✅ 여러 개 마커 + 클릭 시 출발지 자동설정
-    const predefinedMarkers = [
-        { name: "하단역 8번출구", lat: 35.10603, lon: 128.9671 },
-        { name: "하단역 9번출구", lat: 35.10652, lon: 128.9685 },
-        { name: "동아대 버스정류장", lat: 35.11355, lon: 128.9632 },
-        { name: "하단역 2번출구", lat: 35.10603, lon: 128.9647 }
-    ];
-
-    predefinedMarkers.forEach(loc => {
-        const markerObj = new Tmapv2.Marker({
-            position: new Tmapv2.LatLng(loc.lat, loc.lon),
-            map: map
+    // ✅ 지도 초기화
+    window.onload = () => {
+        map = new Tmapv2.Map("map", {
+            center: new Tmapv2.LatLng(35.1046, 128.9665), // 기본 중심
+            width: "100%",
+            height: "400px",
+            zoom: 15
         });
 
-        const infoWindow = new Tmapv2.InfoWindow({
-            position: new Tmapv2.LatLng(loc.lat, loc.lon),
-            content: `<div style='background:white;padding:5px;border-radius:5px;'>${loc.name}</div>`,
-            type: 2,
-            map: null
-        });
+        // ✅ 현재 위치 중심 이동 + 마커
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const currentLat = position.coords.latitude;
+                const currentLon = position.coords.longitude;
 
-        markerObj.addListener("click", () => {
-            // ✅ 이전 InfoWindow 닫기
-            if (openInfoWindow) openInfoWindow.setMap(null);
+                const currentPos = new Tmapv2.LatLng(currentLat, currentLon);
+                map.setCenter(currentPos);
 
-            // ✅ 기존 지도 클릭 마커가 있다면 제거
-            if (marker) {
-                marker.setMap(null);
-                marker = null;
-            }
+                new Tmapv2.Marker({
+                    position: currentPos,
+                    map: map
+                });
+            });
+        }
+        // ✅ 고정된 출발
 
-            // ✅ 새 InfoWindow 강제로 다시 생성
-            const newInfoWindow = new Tmapv2.InfoWindow({
+        // ✅ 여러 개 마커 + 클릭 시 출발지 자동설정
+        const predefinedMarkers = [
+            {name: "하단역 8번출구", lat: 35.10603, lon: 128.9671},
+            {name: "하단역 9번출구", lat: 35.10652, lon: 128.9685},
+            {name: "동아대 버스정류장", lat: 35.11355, lon: 128.9632},
+            {name: "하단역 2번출구", lat: 35.10603, lon: 128.9647}
+        ];
+
+
+        predefinedMarkers.forEach(loc => {
+            const markerObj = new Tmapv2.Marker({
                 position: new Tmapv2.LatLng(loc.lat, loc.lon),
-                content: `<div style='background:white;padding:5px;border-radius:5px;'>${loc.name}</div>`,
-                type: 2,
                 map: map
             });
 
-            openInfoWindow = newInfoWindow;
-
-            // ✅ 출발지 자동 설정
-            document.getElementById("departureLat").value = loc.lat;
-            document.getElementById("departureLon").value = loc.lon;
-            document.getElementById("departure").value = loc.name;
-            document.getElementById("selectedAddress").textContent = "선택된 출발지: " + loc.name;
-        });
-    });
-
-    // ✅ 지도 클릭 시 출발지 수동 선택 (Kakao 주소 변환)
-    map.addListener("click", function(evt) {
-        const lat = evt.latLng.lat();
-        const lon = evt.latLng.lng();
-
-        document.getElementById("departureLat").value = lat;
-        document.getElementById("departureLon").value = lon;
-
-        if (marker) marker.setMap(null);
-        marker = new Tmapv2.Marker({
-            position: new Tmapv2.LatLng(lat, lon),
-            map: map
-        });
-
-        fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lon}&y=${lat}`, {
-            headers: {
-                Authorization: "KakaoAK 2077fc07239acac80bbfd6c0095e1728"
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.documents.length > 0) {
-                    const address = data.documents[0].road_address
-                        ? data.documents[0].road_address.address_name
-                        : data.documents[0].address.address_name;
-
-                    document.getElementById("departure").value = address;
-                    document.getElementById("selectedAddress").textContent = "선택된 출발지: " + address;
-                }
+            const infoWindow = new Tmapv2.InfoWindow({
+                position: new Tmapv2.LatLng(loc.lat, loc.lon),
+                content: `<div style='background:white;padding:5px;border-radius:5px;'>${loc.name}</div>`,
+                type: 2,
+                map: null
             });
-    });
 
+            markerObj.addListener("click", () => {
+                // ✅ 이전 InfoWindow 닫기
+                if (openInfoWindow) openInfoWindow.setMap(null);
+
+                // ✅ 기존 지도 클릭 마커가 있다면 제거
+                if (marker) {
+                    marker.setMap(null);
+                    marker = null;
+                }
+
+                // ✅ 새 InfoWindow 강제로 다시 생성
+                const newInfoWindow = new Tmapv2.InfoWindow({
+                    position: new Tmapv2.LatLng(loc.lat, loc.lon),
+                    content: `<div style='background:white;padding:5px;border-radius:5px;'>${loc.name}</div>`,
+                    type: 2,
+                    map: map
+                });
+
+                openInfoWindow = newInfoWindow;
+
+                // ✅ 출발지 자동 설정
+                document.getElementById("departureLat").value = loc.lat;
+                document.getElementById("departureLon").value = loc.lon;
+                document.getElementById("departure").value = loc.name;
+                document.getElementById("selectedAddress").textContent = "선택된 출발지: " + loc.name;
+            });
+        });
+
+        // ✅ 지도 클릭 시 출발지 수동 선택 (Kakao 주소 변환)
+        map.addListener("click", function (evt) {
+            const lat = evt.latLng.lat();
+            const lon = evt.latLng.lng();
+
+            document.getElementById("departureLat").value = lat;
+            document.getElementById("departureLon").value = lon;
+
+            if (marker) marker.setMap(null);
+            marker = new Tmapv2.Marker({
+                position: new Tmapv2.LatLng(lat, lon),
+                map: map
+            });
+
+            fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lon}&y=${lat}`, {
+                headers: {
+                    Authorization: "KakaoAK 2077fc07239acac80bbfd6c0095e1728"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.documents.length > 0) {
+                        const address = data.documents[0].road_address
+                            ? data.documents[0].road_address.address_name
+                            : data.documents[0].address.address_name;
+
+                        document.getElementById("departure").value = address;
+                        document.getElementById("selectedAddress").textContent = "선택된 출발지: " + address;
+                    }
+                });
+        });
+    };
     // ✅ 도착지 select → 좌표 설정
     function updateDestinationCoords() {
         const select = document.getElementById("destinationSelect");
@@ -175,6 +194,7 @@
         document.getElementById("destinationLat").value = option.getAttribute("data-lat");
         document.getElementById("destinationLon").value = option.getAttribute("data-lon");
     }
+
 </script>
 
 </body>
