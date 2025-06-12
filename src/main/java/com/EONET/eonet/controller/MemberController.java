@@ -53,6 +53,7 @@ public class MemberController {
         member.setId(form.getId());
         member.setStudentId(form.getStudentId());
         member.setEmail(form.getEmail());
+        member.setCardNumber(form.getCardNumber());
         memberService.join(member);
         return "redirect:/login";
     }

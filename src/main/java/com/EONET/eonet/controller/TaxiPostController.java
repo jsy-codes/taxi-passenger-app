@@ -67,9 +67,38 @@ public class TaxiPostController {
 
     @GetMapping("/{id}")
     public String getPostDetail(@PathVariable Long id, Model model) {
+        // 1) 게시글(포스트) 가져오기
         TaxiPost post = taxiPostService.getPostById(id);
         model.addAttribute("post", post);
-        return "postDetail"; // postDetail.html로 이동
+
+        // 2) 현재 로그인한 사용자 가져오기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            Member loginMember = memberService.findByUsername(auth.getName());
+            // 3) 작성자(member)와 로그인 사용자 비교
+            boolean isOwner = loginMember.getId().equals(post.getWriter().getId());
+            model.addAttribute("isOwner", isOwner);
+            //  로그인 사용자 정보를 뷰에 직접 넘기고 싶으면
+            model.addAttribute("loginMember", loginMember);
+        } else {
+            // 비로그인 상태면 무조건 false
+            model.addAttribute("isOwner", false);
+        }
+
+        return "postDetail"; // resources/templates/postDetail.html
+    }
+    @PostMapping("/{id}/delete")
+    public String deletePost(@PathVariable Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            throw new SecurityException("로그인이 필요합니다.");
+        }
+
+        Member loginMember = memberService.findByUsername(auth.getName());
+        taxiPostService.deletePost(id, loginMember.getId());
+
+        return "redirect:/api/taxi-posts/postList";
     }
 
     // Create a new post
