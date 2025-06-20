@@ -27,6 +27,8 @@ public class Member implements UserDetails {
 
     private String cardNumber;
 
+    private String participant;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList(); // 현재 권한 없음
