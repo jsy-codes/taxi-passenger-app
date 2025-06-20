@@ -50,11 +50,7 @@
       <button type="submit" class="btn btn-danger btn-sm">삭제하기</button>
     </form>
     <!-- 수정 버튼 (원하면 경로/컨트롤러 구현) -->
-
-    <button type="button" class="btn btn-danger btn-sm"
-            th:onclick="|handleEdit([[${post.id}]])|">수정하기</button>
-
-
+    <a th:href="@{'/api/taxi-posts/' + ${post.id} + '/edit'}" class="btn btn-secondary btn-sm">수정하기</a>
   </div>
 
   <!-- 지도 + 댓글 영역을 나란히 배치 -->
@@ -103,7 +99,6 @@
     </a>
   </div>
 </div>
-
 
 <script th:inline="javascript">
   const startLat = /*[[${post.departureLat}]]*/ 37.5665;
@@ -186,24 +181,6 @@
       list.style.display = 'none';
     }
   }
-  function handleEdit(postId) {
-    if (confirm("기존 글을 삭제하고 수정하시겠습니까?")) {
-      fetch(`/api/taxi-posts/${postId}/delete`, {
-        method: "POST"
-      })
-              .then(response => {
-                if (response.ok) {
-                  alert("삭제 완료. 수정 페이지로 이동합니다.");
-                  window.location.href = "/api/taxi-posts/new";
-
-                } else {
-                  alert("삭제에 실패했습니다.");
-                }
-              });
-    }
-  }
 </script>
-
-
 </body>
 </html>
