@@ -33,6 +33,30 @@
   <p><strong>출발 시각:</strong> <span th:text="${post.departureTime}"></span></p>
   <p><strong>예상 요금:</strong> <span id="fare"></span>원</p>
   <p><strong>예상 소요 시간:</strong> <span id="time"></span></p>
+  <!-- 참여 버튼 -->
+  <form th:action="@{/api/taxi-participants/join}" method="post"
+        onsubmit="return confirmJoin();">
+    <input type="hidden" name="postId" th:value="${post.id}" />
+    <button class="btn btn-success btn-sm"
+            th:disabled="${post.participants.size() >= 4}">
+      참여
+    </button>
+  </form>
+
+  <script>
+    function confirmJoin() {
+      alert("참여하였습니다!");
+      return true; // 서버로 form 제출
+    }
+  </script>
+  <p th:text="${post.participants.size()} + ' / 4'">[ 0 / 4 ] 명</p>
+  <h2>참여자 명단</h2>
+  <ul>
+    <th:block th:each="participant : ${participants}">
+      <li th:text="${participant.member.id}"></li>
+    </th:block>
+  </ul>
+
 
   <!-- ✅ 작성자 본인일 때만 “삭제”와 “수정” 버튼 노출 -->
   <div class="btn-group" th:if="${isOwner}">
