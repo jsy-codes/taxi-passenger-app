@@ -34,6 +34,14 @@
     <div class="mb-3">
         <a href="/api/taxi-posts/new" class="btn btn-primary">글쓰기</a>
     </div>
+    <div th:if="${member.participant != null}">
+        <form th:action="@{/api/taxi-posts/cancel}" method="post"
+
+              onsubmit="return confirm('참여를 취소하시겠습니까?');">
+            <button type="submit" class="btn btn-warning btn-sm">🚫 참여 취소</button>
+        </form>
+    </div>
+    <br>
 
     <!-- 게시글 테이블 -->
     <table class="table table-striped table-bordered">

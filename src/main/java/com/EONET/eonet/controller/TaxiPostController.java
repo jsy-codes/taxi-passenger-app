@@ -103,7 +103,35 @@ public class TaxiPostController {
         }
 
         Member loginMember = memberService.findByUsername(auth.getName());
+
+        List<Member> participants = memberRepository.findAll().stream()
+                .filter(m -> id.toString().equals(m.getParticipant()))
+                .toList();
+
+        for (Member m : participants) {
+            m.setParticipant(null);
+            memberRepository.save(m);
+        }
+
+
         taxiPostService.deletePost(id, loginMember.getId());
+
+        return "redirect:/api/taxi-posts/postList";
+    }
+
+    @PostMapping("/cancel")
+    @Transactional
+    public String cancelParticipation() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return "redirect:/login";
+        }
+
+        Member member = memberService.findByUsername(auth.getName());
+        if (member.getParticipant() != null) {
+            member.setParticipant(null); // 참여 상태 초기화
+            memberRepository.save(member);
+        }
 
         return "redirect:/api/taxi-posts/postList";
     }
@@ -197,6 +225,7 @@ public class TaxiPostController {
         if (member.getParticipant() == null) {
             member.setParticipant(String.valueOf(postId));
             memberRepository.save(member);
+            System.out.println("참여 저장됨: " + member.getParticipant());
         }
 
         return "redirect:/api/taxi-posts/" + postId;
