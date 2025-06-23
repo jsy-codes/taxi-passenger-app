@@ -26,6 +26,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -215,17 +216,27 @@ public class TaxiPostController {
 
     @PostMapping("/join")
     @Transactional
-    public String joinPost(@RequestParam Long postId) {
+    public String joinPost(@RequestParam Long postId, RedirectAttributes redirectAttributes) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
             return "redirect:/login";
         }
 
         Member member = memberService.findByUsername(auth.getName());
-        if (member.getParticipant() == null) {
-            member.setParticipant(String.valueOf(postId));
-            memberRepository.save(member);
-            System.out.println("참여 저장됨: " + member.getParticipant());
+        if (member.getParticipant() != null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "이미 참여중입니다.");
+            return "redirect:/api/taxi-posts/" + postId;
+        }
+
+        // 참여자 수 확인
+        List<Member> participants = memberRepository.findAll().stream()
+                .filter(m -> postId.toString().equals(m.getParticipant()))
+                .collect(Collectors.toList());
+
+        if (participants.size() >= 4) {
+            // 참여자 수 4명이상 못 받도록 하는 조건문
+            redirectAttributes.addFlashAttribute("errorMessage", "참여 인원이 가득 찼습니다.");
+            return "redirect:/api/taxi-posts/" + postId;
         }
 
         return "redirect:/api/taxi-posts/" + postId;
