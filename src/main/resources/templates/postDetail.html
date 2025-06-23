@@ -33,12 +33,17 @@
   <p><strong>출발 시각:</strong> <span th:text="${post.departureTime}"></span></p>
   <p><strong>예상 요금:</strong> <span id="fare"></span>원</p>
   <p><strong>예상 소요 시간:</strong> <span id="time"></span></p>
-  <div class="mb-3">
-    <form id="participateForm" th:action="@{/api/taxi-posts/join}" method="post"
-          th:object="${post}"
+  <div class="mb-3" th:if="${loginMember != null}">
+    <form th:action="@{/api/taxi-posts/join}" method="post"
           onsubmit="return confirm('참여하시겠습니까?');">
       <input type="hidden" name="postId" th:value="${post.id}" />
-      <button type="submit" class="btn btn-success btn-sm">🚖 참여하기</button>
+      <button type="submit"
+              class="btn btn-success btn-sm"
+              th:disabled="${participants.size() >= 4 or loginMember.participant != null}"
+              th:title="${participants.size() >= 4 ? '참여 인원이 가득 찼습니다.' :
+                     (loginMember.participant != null ? '이미 다른 게시글에 참여 중입니다.' : '')}">
+        🚖 참여하기
+      </button>
     </form>
   </div>
 

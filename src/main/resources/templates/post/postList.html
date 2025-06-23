@@ -36,7 +36,6 @@
     </div>
     <div th:if="${member.participant != null}">
         <form th:action="@{/api/taxi-posts/cancel}" method="post"
-
               onsubmit="return confirm('참여를 취소하시겠습니까?');">
             <button type="submit" class="btn btn-warning btn-sm">🚫 참여 취소</button>
         </form>
@@ -73,6 +72,5 @@
         </tbody>
     </table>
 </div>
-
 </body>
 </html>
