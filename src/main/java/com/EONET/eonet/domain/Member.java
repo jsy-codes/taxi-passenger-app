@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Getter @Setter
@@ -25,6 +26,8 @@ public class Member implements UserDetails {
     private String email; // 동아대 이메일
 
     private String cardNumber;
+
+    private String participant;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

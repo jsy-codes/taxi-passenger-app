@@ -33,6 +33,14 @@
   <p><strong>출발 시각:</strong> <span th:text="${post.departureTime}"></span></p>
   <p><strong>예상 요금:</strong> <span id="fare"></span>원</p>
   <p><strong>예상 소요 시간:</strong> <span id="time"></span></p>
+  <div class="mb-3">
+    <form id="participateForm" th:action="@{/api/taxi-posts/join}" method="post"
+          th:object="${post}"
+          onsubmit="return confirm('참여하시겠습니까?');">
+      <input type="hidden" name="postId" th:value="${post.id}" />
+      <button type="submit" class="btn btn-success btn-sm">🚖 참여하기</button>
+    </form>
+  </div>
 
   <!-- ✅ 작성자 본인일 때만 “삭제”와 “수정” 버튼 노출 -->
   <div class="btn-group" th:if="${isOwner}">
@@ -42,7 +50,11 @@
       <button type="submit" class="btn btn-danger btn-sm">삭제하기</button>
     </form>
     <!-- 수정 버튼 (원하면 경로/컨트롤러 구현) -->
-    <a th:href="@{'/api/taxi-posts/' + ${post.id} + '/edit'}" class="btn btn-secondary btn-sm">수정하기</a>
+
+    <button type="button" class="btn btn-danger btn-sm"
+            th:onclick="|handleEdit([[${post.id}]])|">수정하기</button>
+
+
   </div>
 
   <!-- 지도 + 댓글 영역을 나란히 배치 -->
@@ -52,6 +64,14 @@
       <div id="map" style="height: 400px; border-radius: 10px; overflow: hidden;"></div>
     </div>
 
+    <div>
+      <button onclick="toggleParticipants()" class="btn btn-outline-secondary btn-sm mb-2">👥 참여자 명단 보기</button>
+      <ul id="participantList" style="display:none;">
+        <li th:each="member : ${participants}">
+          <span th:text="${member.id}">참여자ID</span>
+        </li>
+      </ul>
+    </div>
     <!-- 댓글 영역 -->
     <div class="col-md-5">
       <h5 class="mb-3">댓글</h5>
@@ -83,6 +103,7 @@
     </a>
   </div>
 </div>
+
 
 <script th:inline="javascript">
   const startLat = /*[[${post.departureLat}]]*/ 37.5665;
@@ -156,5 +177,33 @@
             });
   }
 </script>
+<script>
+  function toggleParticipants() {
+    const list = document.getElementById('participantList');
+    if (list.style.display === 'none') {
+      list.style.display = 'block';
+    } else {
+      list.style.display = 'none';
+    }
+  }
+  function handleEdit(postId) {
+    if (confirm("기존 글을 삭제하고 수정하시겠습니까?")) {
+      fetch(`/api/taxi-posts/${postId}/delete`, {
+        method: "POST"
+      })
+              .then(response => {
+                if (response.ok) {
+                  alert("삭제 완료. 수정 페이지로 이동합니다.");
+                  window.location.href = "/api/taxi-posts/new";
+
+                } else {
+                  alert("삭제에 실패했습니다.");
+                }
+              });
+    }
+  }
+</script>
+
+
 </body>
 </html>

@@ -4,7 +4,21 @@
     <meta charset="UTF-8"/>
     <title>게시글 목록</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0"></script>
+
+    <script>
+        async function joinPost(postId) {
+            const StudentId = 1; // StudentID 값 불러와야함
+
+            const response = await fetch(`/api/taxi-posts/${postId}/join?StudentId=${StudentId}`, {
+                method: 'POST'
+            });
+
+            const message = await response.text();
+            alert(message);
+            location.reload(); // 참여 후 목록 새로고침
+        }
+    </script>
+
 </head>
 <body>
 <div class="container mt-4">
@@ -31,65 +45,25 @@
             <th>출발 시간</th>
             <th>요금</th>
             <th>상태</th>
-            <th>상세</th> <!-- 👈 새로 추가된 열 제목 -->
+            <th>참여 인원</th>
+            <th>상세</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="post : ${posts}"
-            th:attr="data-lat=${post.departureLat}, data-lon=${post.departureLon}, data-id=${post.id}">
+        <tr th:each="post : ${posts}">
             <td th:text="${post.writer.id}">작성자아이디</td>
             <td th:text="${post.departure}">출발</td>
             <td th:text="${post.destination}">도착</td>
             <td th:text="${post.departureTime}">시간</td>
-            <td th:text="|${post.expectedFare}원|">금액</td>
+            <td th:text="${post.expectedFare}">금액</td>
             <td th:text="${post.status}">상태</td>
+            <td th:text="${post.participants.size()} + ' / 4'">0 / 4</td>
             <td>
                 <a th:href="@{/api/taxi-posts/{id}(id=${post.id})}" class="btn btn-sm btn-outline-primary">상세 보기</a>
             </td>
         </tr>
         </tbody>
     </table>
-
-    <script>
-        // 거리 계산 (Haversine 공식)
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        window.onload = () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const myLat = position.coords.latitude;
-                    const myLon = position.coords.longitude;
-
-                    const rows = Array.from(document.querySelectorAll("tbody tr"));
-
-                    rows.forEach(row => {
-                        const lat = parseFloat(row.getAttribute("data-lat"));
-                        const lon = parseFloat(row.getAttribute("data-lon"));
-                        const dist = calculateDistance(myLat, myLon, lat, lon);
-                        row.setAttribute("data-distance", dist);
-                    });
-
-                    rows.sort((a, b) =>
-                        parseFloat(a.getAttribute("data-distance")) - parseFloat(b.getAttribute("data-distance"))
-                    );
-
-                    const tbody = document.querySelector("tbody");
-                    tbody.innerHTML = "";
-                    rows.forEach(row => tbody.appendChild(row));
-                });
-            } else {
-                alert("위치 정보를 지원하지 않는 브라우저입니다.");
-            }
-        };
-    </script>
 </div>
 </body>
 </html>
