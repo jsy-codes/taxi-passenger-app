@@ -196,6 +196,30 @@
     }
 
 </script>
+<script>
+    document.querySelector("form").addEventListener("submit", function (e) {
+        const requiredHiddenIds = [
+            "departureLat", "departureLon", "departure",
+            "destinationLat", "destinationLon", "destination"
+        ];
 
+        for (const id of requiredHiddenIds) {
+            const el = document.getElementById(id);
+            if (!el || !el.value.trim()) {
+                alert("출발지와 도착지를 모두 선택해주세요.");
+                e.preventDefault();
+                return;
+            }
+        }
+
+        const departureTime = document.getElementById("departureTime");
+        if (!departureTime || !departureTime.value.trim()) {
+            alert("출발 시간을 선택해주세요.");
+            departureTime.focus();
+            e.preventDefault();
+            return;
+        }
+    });
+</script>
 </body>
 </html>
