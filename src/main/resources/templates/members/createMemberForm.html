@@ -29,13 +29,16 @@
     <form role="form" action="/members/new" th:object="${memberForm}" method="post">
         <div class="mb-3">
             <label for="studentId" class="form-label">학번</label>
-            <input type="text" th:field="*{studentId}" class="form-control" id="studentId" placeholder="학번을 입력하세요" required>
-        </div>
+            <input type="text" th:field="*{studentId}" class="form-control" id="studentId" placeholder="학번을 입력하세요" required th:classappend="${#fields.hasErrors('studentId')} ? 'is-invalid'">
+            <!-- 경고 메시지 영역 -->
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('studentId')}" th:errors="*{studentId}">
+                학번 오류
+            </div>
 
         <div class="mb-3">
             <label th:for="id">아이디</label>
             <input type="text" th:field="*{id}" class="form-control" placeholder="아이디를 입력하세요"
-                   th:classappend="${#fields.hasErrors('id')} ? 'fieldError'">
+                   th:classappend="${#fields.hasErrors('id')} ? 'fieldError'" required>
             <p th:if="${#fields.hasErrors('id')}" th:errors="*{id}">Incorrect id</p> </div>
         <div class="mb-3">
             <label for="email" class="form-label">이메일</label>

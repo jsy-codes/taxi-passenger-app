@@ -43,6 +43,11 @@ public class MemberRepository  {
                 .getResultStream()
                 .findFirst(); // Optional<Member> 반환
     }
-
+    public Optional<Member> findByStudentId(String studentId) {
+        return em.createQuery("select m from Member m where m.studentId = :studentId", Member.class)
+                .setParameter("studentId", studentId)
+                .getResultStream()
+                .findFirst();
+    }
 
 }

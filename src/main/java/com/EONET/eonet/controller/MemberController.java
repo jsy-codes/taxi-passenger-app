@@ -46,6 +46,10 @@ public class MemberController {
             return "members/createMemberForm";
         }
 
+        if (memberService.existsByStudentId(form.getStudentId())) {
+            result.rejectValue("studentId", "duplicate", "이미 등록된 학번입니다.");
+            return "members/createMemberForm";
+        }
         Member member = new Member();
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(form.getPassword());

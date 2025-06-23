@@ -13,6 +13,7 @@ public class MemberForm {
     @NotEmpty(message = "비밀번호는 필수 입니다")
     private String password;
 
+    @NotEmpty(message = "학번은 필수 입니다")
     private String studentId;
     @NotEmpty(message = "동아대 이메일은 필수 입니다")
     private String email;
