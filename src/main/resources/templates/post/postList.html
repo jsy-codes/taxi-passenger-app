@@ -28,6 +28,10 @@
         <strong>사용자 : </strong>
         <span th:text="${member.id}">아이디</span><br>
         <strong>학번: </strong><span th:text="${member.studentId}">학번</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">로그아웃</button>
+        </form>
+
     </div>
 
     <!-- 글쓰기 버튼 -->
