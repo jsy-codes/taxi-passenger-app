@@ -43,7 +43,14 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/api/taxi-posts/postList", true)
                         .permitAll()
                 )
-                .logout(LogoutConfigurer::permitAll);
+                .logout(logout -> logout
+                        .logoutUrl("/logout")                      // 기본이기도 함. 안 써도 됨
+                        .logoutSuccessUrl("/login")                     // 로그아웃 성공 후 리다이렉트 위치
+                        .invalidateHttpSession(true)               // 세션 무효화
+                        .deleteCookies("JSESSIONID")               // JSESSIONID 쿠키 삭제
+                        .permitAll()
+                );
+
 
         return http.build();
     }
