@@ -20,7 +20,7 @@ import java.util.Optional;
 public class TaxiPostService {
 
     private final TaxiPostRepository taxiPostRepository;
-    private final String tmapKey = "L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0"; // 네 TMAP 앱키
+    private final String tmapKey = "L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0"; // TMAP 앱키
 
     public int calculateFareFromTmap(double startLat, double startLon, double endLat, double endLon) {
         try {
