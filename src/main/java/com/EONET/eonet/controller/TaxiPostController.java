@@ -34,6 +34,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -61,6 +62,8 @@ public class TaxiPostController {
         }
 
         List<TaxiPost> posts = taxiPostRepository.findAll();
+        posts.forEach(post -> post.getParticipants().size());
+
         model.addAttribute("posts", posts);
 
         return "post/postList";
@@ -195,18 +198,35 @@ public class TaxiPostController {
     }
     @PostMapping("/cancel")
     @Transactional
-    public String cancelParticipation(RedirectAttributes redirectAttributes) {
+    public String cancelParticipation(@RequestParam Long postId,RedirectAttributes redirectAttributes) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
             return "redirect:/login";
         }
 
         Member member = memberService.findByUsername(auth.getName());
-        member.setParticipant(null);
-        memberRepository.save(member);
+        TaxiPost post = taxiPostRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
-        redirectAttributes.addFlashAttribute("message", "참여가 취소되었습니다.");
-        return "redirect:/api/taxi-posts/postList";
+        // 참여 정보 찾기
+        Optional<TaxiParticipant> participantOpt = taxiParticipantRepository.findByMemberAndPost(member, post);
+
+        if (participantOpt.isPresent()) {
+            TaxiParticipant participant = participantOpt.get();
+
+            // 양방향 관계 제거
+            post.getParticipants().remove(participant);
+
+            // DB에서 삭제
+            taxiParticipantRepository.delete(participant);
+
+            // 사용자 참여 상태 초기화
+            member.setParticipant(null);
+            memberRepository.save(member);
+            taxiPostRepository.save(post); // 관계 변경 감지를 위해 저장
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "참여 정보가 존재하지 않습니다.");
+        }return "redirect:/api/taxi-posts/postList";
     }
 
     @PostMapping("/join")
@@ -219,22 +239,34 @@ public class TaxiPostController {
 
         Member member = memberService.findByUsername(auth.getName());
 
+        TaxiPost post = taxiPostRepository
+                .findById(postId).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+
         if (member.getParticipant() != null) {
             redirectAttributes.addFlashAttribute("errorMessage", "이미 다른 게시글에 참여 중입니다.");
             return "redirect:/api/taxi-posts/" + postId;
         }
 
-        long currentCount = memberRepository.findAll().stream()
-                .filter(m -> String.valueOf(postId).equals(m.getParticipant()))
-                .count();
-
-        if (currentCount >= 4) {
+        if (post.getParticipants().size() >= 4) {
             redirectAttributes.addFlashAttribute("errorMessage", "참여 인원이 가득 찼습니다.");
             return "redirect:/api/taxi-posts/" + postId;
         }
 
+        TaxiParticipant participant = new TaxiParticipant();
+        participant.setPost(post);
+        participant.setMember(member);
+
+        // 양방향 연관관계 설정
+        post.getParticipants().add(participant);
+
+        // member 객체에도 참여 정보 저장 (String 형식)
         member.setParticipant(String.valueOf(postId));
+
+        // 저장
         memberRepository.save(member);
+        taxiParticipantRepository.save(participant);
+        taxiPostRepository.save(post); // participants 변경 감지를 위해 post 저장
 
         return "redirect:/api/taxi-posts/" + postId;
     }
