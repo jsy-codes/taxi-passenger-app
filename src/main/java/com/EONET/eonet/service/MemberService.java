@@ -35,7 +35,9 @@ public class MemberService {
             throw new IllegalStateException("이미 존재하는 회원입니다.");
         }
     }
-
+    public boolean existsByStudentId(String studentId) {
+        return memberRepository.findByStudentId(studentId).isPresent();
+    }
     //회원 전체 조회
     public List<Member> findMembers() {
         return memberRepository.findAll();

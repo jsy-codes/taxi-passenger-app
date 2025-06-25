@@ -73,5 +73,15 @@ public class TaxiPostService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id=" + id));
     }
 
+    public void deletePost(Long postId, String loginMemberId) {
+        TaxiPost post = taxiPostRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+
+        if (!post.getWriter().getId().equals(loginMemberId)) {
+            throw new SecurityException("작성자만 게시글을 삭제할 수 있습니다.");
+        }
+
+        taxiPostRepository.delete(post);
+    }
     // 추가적인 기능(글쓰기, 수정, 삭제 등)도 여기서 작성 가능
 }
