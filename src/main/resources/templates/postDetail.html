@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <title>게시글 상세 보기</title>
 
-  <!-- ✅ Tmap 지도 스크립트 -->
+  <!--  Tmap 지도 스크립트 -->
   <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=L5YgKBB01c4hpq2CIQupG4yaczLAmZBaaohHMfD0"></script>
 
-  <!-- ✅ Kakao 주소 → 좌표 변환용 스크립트 (지오코딩용) -->
+  <!--  Kakao 주소 → 좌표 변환용 스크립트 (지오코딩용) -->
   <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=5785ff36be13888f3f627611b39b95d7&libraries=services"></script>
 
   <style>
@@ -47,7 +47,7 @@
     </form>
   </div>
 
-  <!-- ✅ 작성자 본인일 때만 “삭제”와 “수정” 버튼 노출 -->
+  <!--  작성자 본인일 때만 “삭제”와 “수정” 버튼 노출 -->
   <div class="btn-group" th:if="${isOwner}">
     <!-- 삭제 버튼 -->
     <form th:action="@{'/api/taxi-posts/' + ${post.id} + '/delete'}" method="post" th:object="${post}"

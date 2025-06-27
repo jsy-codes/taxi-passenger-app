@@ -21,7 +21,7 @@
 <div class="container mt-5">
     <h2 class="mb-4">게시글 작성</h2>
 
-    <!-- ✅ 폼 시작 -->
+    <!--  폼 시작 -->
     <form action="/api/taxi-posts" method="post" class="needs-validation" novalidate>
 
         <div class="mb-3">
@@ -30,7 +30,7 @@
             <span th:text="${studentId}">학번</span>
         </div>
 
-        <!-- ✅ 도착지 선택 -->
+        <!--  도착지 4개 선택 -->
         <div class="mb-3">
             <label for="destinationSelect" class="form-label">도착지 (건물 선택)</label>
             <select class="form-select" id="destinationSelect" required onchange="updateDestinationCoords()">
@@ -42,13 +42,13 @@
             </select>
         </div>
 
-        <!-- ✅ 도착지: 숨겨진 실제 값 전달 -->
+        <!--  도착지: 숨겨진 실제 값 전달 -->
         <input type="hidden" id="destination" name="destination" required>
         <input type="hidden" id="destinationLat" name="destinationLat" required>
         <input type="hidden" id="destinationLon" name="destinationLon" required>
 
 
-        <!-- ✅ 출발지: 지도에서 선택 -->
+        <!--  출발지: 지도에서 선택 -->
         <p id="selectedAddress" class="text-muted mt-2"></p>
         <div class="mb-3">
             <label class="form-label">출발지 (지도를 클릭해서 선택하세요)</label>
@@ -58,27 +58,27 @@
         <input type="hidden" id="departureLon" name="departureLon" required>
         <input type="hidden" id="departure" name="departure" required>
 
-        <!-- ✅ 출발 시간 -->
+        <!--  출발 시간 -->
         <div class="mb-3">
             <label for="departureTime" class="form-label">출발 시간</label>
             <input type="datetime-local" class="form-control" id="departureTime" name="departureTime" required>
         </div>
 
-        <!-- ✅ 로그인한 사용자 ID -->
+        <!--  로그인한 사용자 ID -->
         <input type="hidden" name="writerId" th:value="${memberId}"/>
 
-        <!-- ✅ 등록/취소 버튼 -->
+        <!--  등록/취소 버튼 -->
         <button type="submit" class="btn btn-success">등록</button>
         <a href="/api/taxi-posts/postList" class="btn btn-secondary">취소</a>
     </form>
 </div>
 
-<!-- ✅ 스크립트 -->
+<!--  스크립트 -->
 <script>
     let map;
     let openInfoWindow = null;  // 현재 열려 있는 말풍선
     let marker = null;          // 지도 클릭 마커
-    // ✅ 지도 초기화
+    //  지도 초기화
     window.onload = () => {
         map = new Tmapv2.Map("map", {
             center: new Tmapv2.LatLng(35.1046, 128.9665), // 기본 중심
@@ -87,7 +87,7 @@
             zoom: 15
         });
 
-        // ✅ 현재 위치 중심 이동 + 마커
+        // gps를 받아서 현재 위치 중심 이동 + 마커찍기
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(position => {
                 const currentLat = position.coords.latitude;
@@ -102,9 +102,9 @@
                 });
             });
         }
-        // ✅ 고정된 출발
+        //  고정된 출발
 
-        // ✅ 여러 개 마커 + 클릭 시 출발지 자동설정
+        //  여러 개 마커 + 클릭 시 출발지 자동설정
         const predefinedMarkers = [
             {name: "하단역 8번출구", lat: 35.10603, lon: 128.9671},
             {name: "하단역 9번출구", lat: 35.10652, lon: 128.9685},
@@ -127,16 +127,16 @@
             });
 
             markerObj.addListener("click", () => {
-                // ✅ 이전 InfoWindow 닫기
+                //  이전 InfoWindow 닫기
                 if (openInfoWindow) openInfoWindow.setMap(null);
 
-                // ✅ 기존 지도 클릭 마커가 있다면 제거
+                //  기존 지도 클릭 마커가 있다면 제거
                 if (marker) {
                     marker.setMap(null);
                     marker = null;
                 }
 
-                // ✅ 새 InfoWindow 강제로 다시 생성
+                //  새 InfoWindow 강제로 다시 생성
                 const newInfoWindow = new Tmapv2.InfoWindow({
                     position: new Tmapv2.LatLng(loc.lat, loc.lon),
                     content: `<div style='background:white;padding:5px;border-radius:5px;'>${loc.name}</div>`,
@@ -146,7 +146,7 @@
 
                 openInfoWindow = newInfoWindow;
 
-                // ✅ 출발지 자동 설정
+                //  출발지 자동 설정
                 document.getElementById("departureLat").value = loc.lat;
                 document.getElementById("departureLon").value = loc.lon;
                 document.getElementById("departure").value = loc.name;
@@ -154,7 +154,7 @@
             });
         });
 
-        // ✅ 지도 클릭 시 출발지 수동 선택 (Kakao 주소 변환)
+        //  지도 클릭 시 출발지 수동 선택 (Kakao 주소 변환)
         map.addListener("click", function (evt) {
             const lat = evt.latLng.lat();
             const lon = evt.latLng.lng();
@@ -186,7 +186,7 @@
                 });
         });
     };
-    // ✅ 도착지 select → 좌표 설정
+    //  도착지 select → 좌표 설정
     function updateDestinationCoords() {
         const select = document.getElementById("destinationSelect");
         const option = select.options[select.selectedIndex];
