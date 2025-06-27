@@ -57,13 +57,11 @@ public class TaxiPostController {
         // 현재 로그인한 사용자 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getName() != null) {
-            Member member = memberService.findByUsername(authentication.getName()); // 사용자 정보 조회
-            model.addAttribute("member", member); // 모델에 추가
+            Member member = memberService.findByUsername(authentication.getName());
+            model.addAttribute("member", member);
         }
 
         List<TaxiPost> posts = taxiPostRepository.findAll();
-        posts.forEach(post -> post.getParticipants().size());
-
         model.addAttribute("posts", posts);
 
         return "post/postList";
@@ -198,35 +196,22 @@ public class TaxiPostController {
     }
     @PostMapping("/cancel")
     @Transactional
-    public String cancelParticipation(@RequestParam Long postId,RedirectAttributes redirectAttributes) {
+    public String cancelParticipation(@RequestParam Long postId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
             return "redirect:/login";
         }
 
         Member member = memberService.findByUsername(auth.getName());
-        TaxiPost post = taxiPostRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
-        // 참여 정보 찾기
-        Optional<TaxiParticipant> participantOpt = taxiParticipantRepository.findByMemberAndPost(member, post);
+        // 현재 사용자가 해당 게시글에 참여 중인지 확인
+        if (member.getParticipant() != null && member.getParticipant().equals(String.valueOf(postId))) {
+            member.setParticipant(null); // 참여 상태 초기화
+            memberRepository.save(member); // 저장
+        }
 
-        if (participantOpt.isPresent()) {
-            TaxiParticipant participant = participantOpt.get();
-
-            // 양방향 관계 제거
-            post.getParticipants().remove(participant);
-
-            // DB에서 삭제
-            taxiParticipantRepository.delete(participant);
-
-            // 사용자 참여 상태 초기화
-            member.setParticipant(null);
-            memberRepository.save(member);
-            taxiPostRepository.save(post); // 관계 변경 감지를 위해 저장
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "참여 정보가 존재하지 않습니다.");
-        }return "redirect:/api/taxi-posts/postList";
+        return "redirect:/api/taxi-posts/postList";  // HTML 페이지로 리다이렉트
     }
 
     @PostMapping("/join")

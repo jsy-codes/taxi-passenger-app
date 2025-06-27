@@ -41,6 +41,7 @@
     <div th:if="${member.participant != null}">
         <form th:action="@{/api/taxi-posts/cancel}" method="post"
               onsubmit="return confirm('참여를 취소하시겠습니까?');">
+            <input type="hidden" name="postId" th:value="${member.participant}" />
             <button type="submit" class="btn btn-warning btn-sm">🚫 참여 취소</button>
         </form>
     </div>
