@@ -7,6 +7,7 @@ package com.EONET.eonet.controller;
 //import com.example.project.repository.TaxiPostRepository;
 //import com.example.project.repository.MemberRepository;
 import com.EONET.eonet.domain.Member;
+import com.EONET.eonet.domain.PostStatus;
 import com.EONET.eonet.domain.TaxiParticipant;
 import com.EONET.eonet.domain.TaxiPost;
 import com.EONET.eonet.dto.TaxiPostDto;
@@ -34,6 +35,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -56,8 +58,8 @@ public class TaxiPostController {
         // 현재 로그인한 사용자 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getName() != null) {
-            Member member = memberService.findByUsername(authentication.getName()); // 사용자 정보 조회
-            model.addAttribute("member", member); // 모델에 추가
+            Member member = memberService.findByUsername(authentication.getName());
+            model.addAttribute("member", member);
         }
 
         List<TaxiPost> posts = taxiPostRepository.findAll();
@@ -195,17 +197,37 @@ public class TaxiPostController {
     }
     @PostMapping("/cancel")
     @Transactional
-    public String cancelParticipation(RedirectAttributes redirectAttributes) {
+    public String cancelParticipation(@RequestParam Long postId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
             return "redirect:/login";
         }
 
+        // 현재 로그인한 사용자
         Member member = memberService.findByUsername(auth.getName());
+
+        // 게시글 조회
+        TaxiPost post = taxiPostRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
+
+        // 참여 정보 삭제
+        taxiParticipantRepository.findByMemberAndPost(member, post).ifPresent(participant -> {
+            taxiParticipantRepository.delete(participant);
+            post.getParticipants().remove(participant); // 양방향 정합성 유지
+        });
+
+        // 참여 정보 초기화
         member.setParticipant(null);
         memberRepository.save(member);
 
-        redirectAttributes.addFlashAttribute("message", "참여가 취소되었습니다.");
+        // ✅ 상태 복원: 4명 → 3명 이하로 줄면 다시 모집중
+        if (post.getStatus() == PostStatus.CLOSED && post.getParticipants().size() < post.getMaxPeople()) {
+            post.setStatus(PostStatus.RECRUITING);
+        }
+
+        taxiPostRepository.save(post); // 상태 반영
+
         return "redirect:/api/taxi-posts/postList";
     }
 
@@ -219,23 +241,36 @@ public class TaxiPostController {
 
         Member member = memberService.findByUsername(auth.getName());
 
+        TaxiPost post = taxiPostRepository
+                .findById(postId).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
         if (member.getParticipant() != null) {
             redirectAttributes.addFlashAttribute("errorMessage", "이미 다른 게시글에 참여 중입니다.");
             return "redirect:/api/taxi-posts/" + postId;
         }
 
-        long currentCount = memberRepository.findAll().stream()
-                .filter(m -> String.valueOf(postId).equals(m.getParticipant()))
-                .count();
-
-        if (currentCount >= 4) {
+        if (post.getParticipants().size() >= 4) {
             redirectAttributes.addFlashAttribute("errorMessage", "참여 인원이 가득 찼습니다.");
             return "redirect:/api/taxi-posts/" + postId;
         }
 
+        TaxiParticipant participant = new TaxiParticipant();
+        participant.setPost(post);
+        participant.setMember(member);
+
+        post.getParticipants().add(participant);
         member.setParticipant(String.valueOf(postId));
+
+        // ✅ 인원 다 찼으면 상태 변경
+        if (post.getParticipants().size()  >= post.getMaxPeople()) { // +1은 아직 save 안된 새 참가자
+            post.setStatus(PostStatus.CLOSED);
+        }
+
         memberRepository.save(member);
+        taxiParticipantRepository.save(participant);
+        taxiPostRepository.save(post);
 
         return "redirect:/api/taxi-posts/" + postId;
     }
+
 }
