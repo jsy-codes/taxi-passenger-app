@@ -16,5 +16,8 @@ public interface TaxiParticipantRepository extends JpaRepository<TaxiParticipant
 
     boolean existsByMemberAndPost(Member member, TaxiPost post);
     Optional<TaxiParticipant> findByMemberAndPost(Member member, TaxiPost post);
+    // TaxiParticipantRepository.java
+
+
 }
 

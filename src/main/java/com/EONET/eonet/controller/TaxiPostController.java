@@ -203,15 +203,26 @@ public class TaxiPostController {
             return "redirect:/login";
         }
 
+        // 로그인한 사용자 객체 조회
         Member member = memberService.findByUsername(auth.getName());
 
-        // 현재 사용자가 해당 게시글에 참여 중인지 확인
-        if (member.getParticipant() != null && member.getParticipant().equals(String.valueOf(postId))) {
-            member.setParticipant(null); // 참여 상태 초기화
-            memberRepository.save(member); // 저장
-        }
+        // 게시글 조회
+        TaxiPost post = taxiPostRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
-        return "redirect:/api/taxi-posts/postList";  // HTML 페이지로 리다이렉트
+        // 참여 정보 찾아서 삭제
+        taxiParticipantRepository.findByMemberAndPost(member, post).ifPresent(participant -> {
+            taxiParticipantRepository.delete(participant); // DB에서 삭제
+            post.getParticipants().remove(participant);    // 리스트에서도 제거 (선택, 양방향 정합성용)
+        });
+
+        // 멤버 상태 초기화 및 저장
+        member.setParticipant(null);
+        // member.setCancelCount(member.getCancelCount() + 1); // ❗ 취소 횟수 저장할 경우
+        memberRepository.save(member);
+        taxiPostRepository.save(post); // 참여자 수 갱신 위해 post도 저장 (optional)
+
+        return "redirect:/api/taxi-posts/postList";
     }
 
     @PostMapping("/join")
