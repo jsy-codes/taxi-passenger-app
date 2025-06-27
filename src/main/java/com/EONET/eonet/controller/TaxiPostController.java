@@ -7,6 +7,7 @@ package com.EONET.eonet.controller;
 //import com.example.project.repository.TaxiPostRepository;
 //import com.example.project.repository.MemberRepository;
 import com.EONET.eonet.domain.Member;
+import com.EONET.eonet.domain.PostStatus;
 import com.EONET.eonet.domain.TaxiParticipant;
 import com.EONET.eonet.domain.TaxiPost;
 import com.EONET.eonet.dto.TaxiPostDto;
@@ -203,24 +204,29 @@ public class TaxiPostController {
             return "redirect:/login";
         }
 
-        // 로그인한 사용자 객체 조회
+        // 현재 로그인한 사용자
         Member member = memberService.findByUsername(auth.getName());
 
         // 게시글 조회
         TaxiPost post = taxiPostRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
-        // 참여 정보 찾아서 삭제
+        // 참여 정보 삭제
         taxiParticipantRepository.findByMemberAndPost(member, post).ifPresent(participant -> {
-            taxiParticipantRepository.delete(participant); // DB에서 삭제
-            post.getParticipants().remove(participant);    // 리스트에서도 제거 (선택, 양방향 정합성용)
+            taxiParticipantRepository.delete(participant);
+            post.getParticipants().remove(participant); // 양방향 정합성 유지
         });
 
-        // 멤버 상태 초기화 및 저장
+        // 참여 정보 초기화
         member.setParticipant(null);
-        // member.setCancelCount(member.getCancelCount() + 1); // ❗ 취소 횟수 저장할 경우
         memberRepository.save(member);
-        taxiPostRepository.save(post); // 참여자 수 갱신 위해 post도 저장 (optional)
+
+        // ✅ 상태 복원: 4명 → 3명 이하로 줄면 다시 모집중
+        if (post.getStatus() == PostStatus.CLOSED && post.getParticipants().size() < post.getMaxPeople()) {
+            post.setStatus(PostStatus.RECRUITING);
+        }
+
+        taxiPostRepository.save(post); // 상태 반영
 
         return "redirect:/api/taxi-posts/postList";
     }
@@ -238,7 +244,6 @@ public class TaxiPostController {
         TaxiPost post = taxiPostRepository
                 .findById(postId).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
-
         if (member.getParticipant() != null) {
             redirectAttributes.addFlashAttribute("errorMessage", "이미 다른 게시글에 참여 중입니다.");
             return "redirect:/api/taxi-posts/" + postId;
@@ -253,17 +258,19 @@ public class TaxiPostController {
         participant.setPost(post);
         participant.setMember(member);
 
-        // 양방향 연관관계 설정
         post.getParticipants().add(participant);
-
-        // member 객체에도 참여 정보 저장 (String 형식)
         member.setParticipant(String.valueOf(postId));
 
-        // 저장
+        // ✅ 인원 다 찼으면 상태 변경
+        if (post.getParticipants().size()  >= post.getMaxPeople()) { // +1은 아직 save 안된 새 참가자
+            post.setStatus(PostStatus.CLOSED);
+        }
+
         memberRepository.save(member);
         taxiParticipantRepository.save(participant);
-        taxiPostRepository.save(post); // participants 변경 감지를 위해 post 저장
+        taxiPostRepository.save(post);
 
         return "redirect:/api/taxi-posts/" + postId;
     }
+
 }
