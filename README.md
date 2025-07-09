@@ -9,14 +9,13 @@
 
 ### 🔗 Repository 주소
 
-[https://github.com/CornCar/taxi-passenger-app.git](https://github.com/CornCar/taxi-passenger-app.git)
-
+[https://github.com/jsy-codes/taxi-passenger-app.git](https://github.com/jsy-codes/taxi-passenger-app.git)
 ---
 
 ## 🛠️ 실행 방법
 
 ```bash
-git clone https://github.com/CornCar/taxi-passenger-app.git
+git clone https://github.com/jsy-codes/taxi-passenger-app.git
 cd taxi-passenger-app
 ./gradlew bootRun
 ```
